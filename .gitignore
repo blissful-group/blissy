@@ -1,0 +1,24 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# builds
+dist/
+
+# misc
+.DS_Store
+
+# local env files
+.env.local
+.env.*.local
+
+# local temporary folders
+.tmp/
+
+# lockfiles
+package-lock.json
+yarn.lock
+
+# Moon
+.moon/cache
+.moon/docker
