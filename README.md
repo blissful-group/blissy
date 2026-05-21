@@ -1,6 +1,6 @@
 # [Blissy](https://github.com/blissful-group/blissy)
 
-The simple auth package.
+The simple auth library.
 
 ## Repository
 

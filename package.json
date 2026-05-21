@@ -1,0 +1,15 @@
+{
+  "name": "blissy",
+  "description": "The mono-repo for simple auth",
+  "homepage": "https://github.com/blissful-group/blissy#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blissful-group/blissy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blissful-group/blissy/issues"
+  },
+  "keywords": ["auth", "authentication", "authorization", "oauth2", "oidc", "openid-connect", "identity"],
+  "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
+  "license": "MIT"
+}
