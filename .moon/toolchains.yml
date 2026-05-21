@@ -1,0 +1,14 @@
+# https://moonrepo.dev/docs/config/toolchains
+$schema: "./cache/schemas/toolchains.json"
+
+javascript:
+  dedupeOnLockfileChange: false
+  packageManager: pnpm
+  syncProjectWorkspaceDependencies: true
+  dependencyVersionFormat: "workspace-caret"
+
+node: {}
+
+pnpm: {
+  installDependencies: true
+}
