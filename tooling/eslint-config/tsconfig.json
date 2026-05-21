@@ -1,0 +1,11 @@
+{
+  "extends": "@blissy/typescript-config/tsconfig.base",
+  "compilerOptions": {
+    /* Options */
+    "allowJs": true,
+
+    /* Linting */
+    "noEmit": true,
+    "esModuleInterop": true
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@blissy/typescript-config",
+  "description": "Blissy universal typescript configuration package",
+  "private": true,
+  "license": "MIT",
+  "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
+  "homepage": "https://github.com/blissful-group/blissy#readme",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blissful-group/blissy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blissful-group/blissy/issues"
+  },
+  "files": [
+    "tsconfig.base.json",
+    "lib"
+  ],
+  "exports": {
+    "./tsconfig.base": "./tsconfig.base.json",
+    "./extensions": {
+      "types": "./lib/extensions.d.ts",
+      "default": "./lib/extensions.mjs"
+    },
+    "./resolvers": {
+      "types": "./lib/resolvers.d.ts",
+      "default": "./lib/resolvers.mjs"
+    }
+  },
+  "scripts": {
+    "lint": "run-p lint:eslint lint:dependencies",
+    "lint:dependencies": "pnpx depcheck",
+    "lint:eslint": "eslint ."
+  },
+  "devDependencies": {
+    "@blissy/eslint-config": "workspace:^",
+    "npm-run-all2": "^9.0.0"
+  },
+  "peerDependencies": {
+    "eslint": "*"
+  }
+}

@@ -1,0 +1,6 @@
+language: typescript
+layer: configuration
+
+tasks:
+  lint:
+    command: pnpm lint

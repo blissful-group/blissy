@@ -1,0 +1,49 @@
+{
+  "name": "@blissy/eslint-config",
+  "description": "Blissy eslint configuration package",
+  "private": true,
+  "license": "MIT",
+  "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
+  "homepage": "https://github.com/blissful-group/blissy#readme",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blissful-group/blissy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blissful-group/blissy/issues"
+  },
+  "main": "./eslint.config.mjs",
+  "bin": {
+    "eslint": "./node_modules/.bin/eslint"
+  },
+  "exports": {
+    "./base": "./config/base.mjs",
+    "./recommended": "./config/recommended.mjs"
+  },
+  "scripts": {
+    "lint": "run-p lint:eslint lint:dependencies",
+    "lint:dependencies": "pnpx depcheck",
+    "lint:eslint": "eslint ."
+  },
+  "devDependencies": {
+    "@blissy/typescript-config": "workspace:^",
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^3.10.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsonc": "^2.21.1",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sort-destructure-keys": "^2.0.0",
+    "globals": "^16.5.0",
+    "jsonc-eslint-parser": "^2.4.2",
+    "npm-run-all2": "^9.0.0",
+    "typescript-eslint": "^8.59.2"
+  },
+  "peerDependencies": {
+    "typescript": "*",
+    "prettier": "*"
+  }
+}

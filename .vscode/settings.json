@@ -1,0 +1,20 @@
+{
+  "workbench.editorAssociations": {
+    "*.excalidraw.png": "editor.excalidraw",
+    "*.drawio.png": "hediet.vscode-drawio",
+    "*.png": "imagePreview.previewEditor"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "eslint.format.enable": true
+}
