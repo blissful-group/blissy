@@ -1,0 +1,18 @@
+layer: tool
+language: bash
+stack: systems
+
+
+tasks:
+  changeset:
+    description: Add new changeset entries
+    options:
+      interactive: true
+      cache: false
+    command: pnpx @changesets/cli
+
+  version:
+    description: Update versions and add changelog entries
+    command: pnpx @changesets/cli version
+    options:
+      cache: false
