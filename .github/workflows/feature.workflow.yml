@@ -9,7 +9,7 @@ jobs:
   # in the current unreleased changesets, and that no extra projects are listed.
   # ==============================================================================
   changeset:
-    name: Checking changesets on '${{ github.event.pull_request.title || github.ref_name }}' 📝...
+    name: Checking changesets 📝...
     if: ${{ !contains(github.head_ref, 'changeset-release') }}
     runs-on: ubuntu-latest
     steps:
@@ -135,7 +135,7 @@ jobs:
   # Runs the standard lint and test targets for pull requests.
   # =============================================================
   test:
-    name: Running tests on '${{ github.event.pull_request.title || github.ref_name }}' 🌡️...
+    name: Running tests 🌡️...
     if: ${{ !contains(github.head_ref, 'changeset-release') }}
     runs-on: ubuntu-latest
     steps:
