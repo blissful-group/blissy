@@ -1,0 +1,15 @@
+{
+  "extends": "@blissy/typescript-config/tsconfig.base",
+  "compilerOptions": {
+    /* Target */
+    "module": "esnext",
+    "target": "esnext",
+
+    /* Options */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    /* Linting */
+    "noEmit": true
+  }
+}

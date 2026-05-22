@@ -1,0 +1,9 @@
+language: typescript
+layer: library
+
+tasks:
+  lint:
+    command: pnpm lint
+
+  build:
+    command: pnpm build
