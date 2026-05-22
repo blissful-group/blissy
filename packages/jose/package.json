@@ -33,13 +33,16 @@
     "lint": "npm-run-all --parallel lint:eslint lint:tsc --parallel lint:dependencies",
     "lint:dependencies": "pnpx depcheck",
     "lint:eslint": "eslint .",
-    "lint:tsc": "tsc"
+    "lint:tsc": "tsc",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@blissy/eslint-config": "workspace:^",
     "@blissy/typescript-config": "workspace:^",
+    "@vitest/coverage-v8": "^4.1.7",
+    "npm-run-all2": "9.0.0",
     "tsdown": "^0.22.0",
-    "npm-run-all2": "9.0.0"
+    "vitest": "^4.1.7"
   },
   "peerDependencies": {
     "eslint": "*",
