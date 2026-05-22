@@ -1,0 +1,101 @@
+name: Main
+run-name: Updating '${{ github.ref_name }}' 🔄...
+permissions: write-all
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "!refs/tags/*"
+concurrency:
+  group: ci-${{ github.ref }}-main
+  cancel-in-progress: true
+jobs:
+  # ====================================================================
+  # Uses Changesets to either open or update a release pull request when
+  # there are unreleased changesets, or publish packages when a release
+  # pull request has already been merged into the main branch.
+  # ====================================================================
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Cache local dependencies
+        if: inputs.cache-name
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local
+            ~/.pnpm-store
+          key: cache-local-main-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            cache-local-main
+            cache-local-
+
+      - name: Inject Moon
+        uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+          cache: true
+          cache-base: ${{ github.event.repository.default_branch }}
+
+      - name: Summarize pending changesets
+        run: |
+          set -euo pipefail
+
+          if pnpx @changesets/cli status --output=changeset-status.json 2>changeset-status.stderr; then
+            release_count=$(jq '.releases | length' changeset-status.json)
+            project_count=$(jq '.releases | map(.name) | unique | length' changeset-status.json)
+            project_list=$(jq -r '.releases | map(.name) | unique | sort | if length == 0 then "none" else join(", ") end' changeset-status.json)
+          else
+            if grep -q 'No unreleased changesets found' changeset-status.stderr; then
+              release_count=0
+              project_count=0
+              project_list='none'
+            else
+              cat changeset-status.stderr >&2
+              exit 1
+            fi
+          fi
+
+          {
+            printf '### Pending changesets\n\n'
+            printf -- '- Release entries found by `@changesets/cli status`: `%s`\n' "$release_count"
+            printf -- '- Unique projects referenced by unreleased changesets: `%s`\n' "$project_count"
+            printf -- '- Projects: `%s`\n\n' "$project_list"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: moon ci :publish
+        # TODO - disable actual publishing
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summarize release action result
+        if: always()
+        run: |
+          set -euo pipefail
+
+          published='${{ steps.changesets.outputs.published }}'
+          published_packages='${{ steps.changesets.outputs.publishedPackages || '' }}'
+
+          if [ -z "$published_packages" ]; then
+            published_packages='[]'
+          fi
+
+          published_count=$(jq 'length' <<< "$published_packages")
+
+          {
+            printf '### Changesets action result\n\n'
+            printf -- '- Published: `%s`\n' "$published"
+            printf -- '- Published package count: `%s`\n' "$published_count"
+            printf -- '- Published packages: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else map(.name + "@" + .version) | join(", ") end' <<< "$published_packages")"
+          } >> "$GITHUB_STEP_SUMMARY"

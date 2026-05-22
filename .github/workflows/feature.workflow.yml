@@ -1,0 +1,203 @@
+name: Feature workflow
+run-name: Feature guards on '${{ github.event.pull_request.title || github.ref_name }}' 🌡️...
+permissions: write-all
+on:
+  pull_request:
+jobs:
+  # ==============================================================================
+  # Verifies that every affected publishable Moon project is represented
+  # in the current unreleased changesets, and that no extra projects are listed.
+  # ==============================================================================
+  changeset:
+    name: Checking changesets 📝...
+    if: ${{ !contains(github.head_ref, 'changeset-release') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Cache local dependencies
+        if: inputs.cache-name
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local
+            ~/.pnpm-store
+          key: cache-local-changeset-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            cache-local-changeset
+            cache-local-
+
+      - name: Inject Moon
+        uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+          cache: true
+          cache-base: ${{ github.event.repository.default_branch }}
+
+      - name: Set pnpm store directory
+        run: pnpm config set store-dir "~/.pnpm-store"
+
+      - name: Add local binaries to PATH
+        run: echo "~/.local/bin" >> $GITHUB_PATH
+
+      - name: Collect affected publishable project names
+        id: affected-projects
+        run: |
+          set -euo pipefail
+
+          moon query changed-files --base "${{ github.event.pull_request.base.sha }}" --head HEAD > changed-files.json
+          moon query projects --affected --tasks publish < changed-files.json > affected-query.json
+          jq -c '.projects | map(.id) | unique | sort' affected-query.json > affected-projects.json
+
+          printf 'projects=%s\n' "$(jq -c . affected-projects.json)" >> "$GITHUB_OUTPUT"
+
+          affected_count=$(jq 'length' affected-projects.json)
+          changed_file_count=$(jq 'length' changed-files.json)
+
+          {
+            printf '### Affected publishable projects\n\n'
+            printf -- '- Changed files found by `moon query changed-files`: `%s`\n' "$changed_file_count"
+            printf -- '- Publishable projects found by `moon query projects --affected --tasks publish`: `%s`\n' "$affected_count"
+            printf -- '- Projects: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' affected-projects.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Collect changeset project names
+        id: changeset-projects
+        run: |
+          set -euo pipefail
+          pnpx @changesets/cli status \
+            --since origin/${{ github.event.repository.default_branch }} \
+            --output=changeset-status.json
+
+          jq -c '.releases | map(.name) | unique | sort' changeset-status.json > changeset-projects.json
+
+          printf 'projects=%s\n' "$(jq -c . changeset-projects.json)" >> "$GITHUB_OUTPUT"
+
+          release_count=$(jq '.releases | length' changeset-status.json)
+          project_count=$(jq 'length' changeset-projects.json)
+
+          {
+            printf '### Changeset projects\n\n'
+            printf -- '- Release entries found by `@changesets/cli status`: `%s`\n' "$release_count"
+            printf -- '- Unique projects referenced by changesets: `%s`\n' "$project_count"
+            printf -- '- Projects: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' changeset-projects.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify affected publishable projects equal changeset projects
+        run: |
+          set -euo pipefail
+
+          affected_projects='${{ steps.affected-projects.outputs.projects }}'
+          changeset_projects='${{ steps.changeset-projects.outputs.projects }}'
+
+          if [ "$affected_projects" = "$changeset_projects" ]; then
+            printf 'Affected publishable projects match changeset projects: %s\n' "$(jq -r 'join(", ")' <<< "$affected_projects")"
+
+            {
+              printf '### Changeset verification\n\n'
+              printf -- '- Result: `match`\n'
+              printf -- '- Affected publishable projects and changeset projects are aligned.\n\n'
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            exit 0
+          fi
+
+          missing_from_changesets=$(jq -n -c \
+            --argjson affected "$affected_projects" \
+            --argjson changesets "$changeset_projects" \
+            '$affected - $changesets')
+
+          missing_from_affected=$(jq -n -c \
+            --argjson affected "$affected_projects" \
+            --argjson changesets "$changeset_projects" \
+            '$changesets - $affected')
+
+          printf '%s\n' 'Affected publishable projects and changeset projects do not match.' >&2
+          printf '%s\n' 'Missing from changesets:' >&2
+          jq -r '.[] | "- " + .' <<< "$missing_from_changesets" >&2
+
+          printf '%s\n' 'Missing from affected publishable projects:' >&2
+          jq -r '.[] | "- " + .' <<< "$missing_from_affected" >&2
+
+          {
+            printf '### Changeset verification\n\n'
+            printf -- '- Result: `mismatch`\n'
+            printf -- '- Missing from changesets: `%s`\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' <<< "$missing_from_changesets")"
+            printf -- '- Missing from affected publishable projects: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' <<< "$missing_from_affected")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit 1
+
+  # =============================================================
+  # Runs the standard lint and test targets for pull requests.
+  # =============================================================
+  test:
+    name: Running tests 🌡️...
+    if: ${{ !contains(github.head_ref, 'changeset-release') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Cache local dependencies
+        if: inputs.cache-name
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local
+            ~/.pnpm-store
+          key: cache-local-test-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            cache-local-test
+            cache-local-
+
+      - name: Inject Moon
+        uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+          cache: true
+          cache-base: ${{ github.event.repository.default_branch }}
+
+      - name: Set pnpm store directory
+        run: pnpm config set store-dir "~/.pnpm-store"
+
+      - name: Add local binaries to PATH
+        run: echo "~/.local/bin" >> $GITHUB_PATH
+
+      - name: Summarize test scope
+        run: |
+          set -euo pipefail
+
+          moon query changed-files --base "${{ github.event.pull_request.base.sha }}" --head HEAD > changed-files.json
+          moon query projects --affected < changed-files.json > affected-projects.json
+
+          changed_file_count=$(jq 'length' changed-files.json)
+          affected_project_count=$(jq '.projects | length' affected-projects.json)
+          affected_projects=$(jq -r '.projects | map(.id) | unique | sort | if length == 0 then "none" else join(", ") end' affected-projects.json)
+
+          {
+            printf '### Test scope\n\n'
+            printf -- '- Changed files found by `moon query changed-files`: `%s`\n' "$changed_file_count"
+            printf -- '- Affected projects found by `moon query projects --affected`: `%s`\n' "$affected_project_count"
+            printf -- '- Projects: `%s`\n\n' "$affected_projects"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run tests 🌡️...
+        id: run-tests
+        run: moon ci :lint :test
+
+      - name: Summarize test result
+        if: always()
+        run: |
+          set -euo pipefail
+
+          {
+            printf '### Test result\n\n'
+            printf -- '- Lint and test command: `moon ci :lint :test`\n'
+            printf -- '- Result: `%s`\n\n' '${{ steps.run-tests.outcome }}'
+          } >> "$GITHUB_STEP_SUMMARY"
