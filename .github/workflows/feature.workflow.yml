@@ -54,15 +54,37 @@ jobs:
 
           printf 'projects=%s\n' "$(jq -c . affected-projects.json)" >> "$GITHUB_OUTPUT"
 
+          affected_count=$(jq 'length' affected-projects.json)
+          changed_file_count=$(jq 'length' changed-files.json)
+
+          {
+            printf '### Affected publishable projects\n\n'
+            printf -- '- Changed files found by `moon query changed-files`: `%s`\n' "$changed_file_count"
+            printf -- '- Publishable projects found by `moon query projects --affected --tasks publish`: `%s`\n' "$affected_count"
+            printf -- '- Projects: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' affected-projects.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Collect changeset project names
         id: changeset-projects
         run: |
           set -euo pipefail
-          pnpx @changesets/cli status --output=changeset-status.json
+          pnpx @changesets/cli status \
+            --since origin/${{ github.event.repository.default_branch }} \
+            --output=changeset-status.json
 
           jq -c '.releases | map(.name) | unique | sort' changeset-status.json > changeset-projects.json
 
           printf 'projects=%s\n' "$(jq -c . changeset-projects.json)" >> "$GITHUB_OUTPUT"
+
+          release_count=$(jq '.releases | length' changeset-status.json)
+          project_count=$(jq 'length' changeset-projects.json)
+
+          {
+            printf '### Changeset projects\n\n'
+            printf -- '- Release entries found by `@changesets/cli status`: `%s`\n' "$release_count"
+            printf -- '- Unique projects referenced by changesets: `%s`\n' "$project_count"
+            printf -- '- Projects: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' changeset-projects.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify affected publishable projects equal changeset projects
         run: |
@@ -73,6 +95,13 @@ jobs:
 
           if [ "$affected_projects" = "$changeset_projects" ]; then
             printf 'Affected publishable projects match changeset projects: %s\n' "$(jq -r 'join(", ")' <<< "$affected_projects")"
+
+            {
+              printf '### Changeset verification\n\n'
+              printf -- '- Result: `match`\n'
+              printf -- '- Affected publishable projects and changeset projects are aligned.\n\n'
+            } >> "$GITHUB_STEP_SUMMARY"
+
             exit 0
           fi
 
@@ -92,6 +121,13 @@ jobs:
 
           printf '%s\n' 'Missing from affected publishable projects:' >&2
           jq -r '.[] | "- " + .' <<< "$missing_from_affected" >&2
+
+          {
+            printf '### Changeset verification\n\n'
+            printf -- '- Result: `mismatch`\n'
+            printf -- '- Missing from changesets: `%s`\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' <<< "$missing_from_changesets")"
+            printf -- '- Missing from affected publishable projects: `%s`\n\n' "$(jq -r 'if length == 0 then "none" else join(", ") end' <<< "$missing_from_affected")"
+          } >> "$GITHUB_STEP_SUMMARY"
 
           exit 1
 
