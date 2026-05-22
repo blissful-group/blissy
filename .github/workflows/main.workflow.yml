@@ -1,0 +1,52 @@
+name: Main
+run-name: Updating '${{ github.ref_name }}' 🔄...
+permissions: write-all
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "!refs/tags/*"
+concurrency:
+  group: ci-${{ github.ref }}-main
+  cancel-in-progress: true
+jobs:
+  # ====================================================================
+  # Uses Changesets to either open or update a release pull request when
+  # there are unreleased changesets, or publish packages when a release
+  # pull request has already been merged into the main branch.
+  # ====================================================================
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Cache local dependencies
+        if: inputs.cache-name
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local
+            ~/.pnpm-store
+          key: cache-local-main-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            cache-local-main
+            cache-local-
+
+      - name: Inject Moon
+        uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+          cache: true
+          cache-base: ${{ github.event.repository.default_branch }}
+
+      - name: Create Release Pull Request or Publish
+        uses: changesets/action@v1
+        with:
+          publish: moon ci :publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
