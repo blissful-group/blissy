@@ -6,7 +6,7 @@ export default defineConfig({
     environment: "node",
     coverage: {
       enabled: true,
-      reporter: ["text", "html"],
+      reporter: [["text", { skipFull: false }], "html"],
       thresholds: {
         lines: 100,
         functions: 100,

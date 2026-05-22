@@ -2,11 +2,14 @@ language: typescript
 layer: library
 
 tasks:
-  lint:
-    command: pnpm lint
-
   build:
     command: pnpm build
+
+  format:
+    command: pnpm format
+
+  lint:
+    command: pnpm lint
 
   test:
     command: pnpm test

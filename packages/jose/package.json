@@ -30,6 +30,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "format": "eslint . --fix",
     "lint": "npm-run-all --parallel lint:eslint lint:tsc --parallel lint:dependencies",
     "lint:dependencies": "pnpx depcheck",
     "lint:eslint": "eslint .",
