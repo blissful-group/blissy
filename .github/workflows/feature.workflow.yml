@@ -169,5 +169,35 @@ jobs:
       - name: Add local binaries to PATH
         run: echo "~/.local/bin" >> $GITHUB_PATH
 
+      - name: Summarize test scope
+        run: |
+          set -euo pipefail
+
+          moon query changed-files --base "${{ github.event.pull_request.base.sha }}" --head HEAD > changed-files.json
+          moon query projects --affected < changed-files.json > affected-projects.json
+
+          changed_file_count=$(jq 'length' changed-files.json)
+          affected_project_count=$(jq '.projects | length' affected-projects.json)
+          affected_projects=$(jq -r '.projects | map(.id) | unique | sort | if length == 0 then "none" else join(", ") end' affected-projects.json)
+
+          {
+            printf '### Test scope\n\n'
+            printf -- '- Changed files found by `moon query changed-files`: `%s`\n' "$changed_file_count"
+            printf -- '- Affected projects found by `moon query projects --affected`: `%s`\n' "$affected_project_count"
+            printf -- '- Projects: `%s`\n\n' "$affected_projects"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run tests 🌡️...
+        id: run-tests
         run: moon ci :lint :test
+
+      - name: Summarize test result
+        if: always()
+        run: |
+          set -euo pipefail
+
+          {
+            printf '### Test result\n\n'
+            printf -- '- Lint and test command: `moon ci :lint :test`\n'
+            printf -- '- Result: `%s`\n\n' '${{ steps.run-tests.outcome }}'
+          } >> "$GITHUB_STEP_SUMMARY"
