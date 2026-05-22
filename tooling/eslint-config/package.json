@@ -13,7 +13,6 @@
   "bugs": {
     "url": "https://github.com/blissful-group/blissy/issues"
   },
-  "main": "./eslint.config.mjs",
   "bin": {
     "eslint": "./node_modules/.bin/eslint"
   },

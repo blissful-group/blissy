@@ -27,17 +27,5 @@
       "types": "./lib/resolvers.d.ts",
       "default": "./lib/resolvers.mjs"
     }
-  },
-  "scripts": {
-    "lint": "run-p lint:eslint lint:dependencies",
-    "lint:dependencies": "pnpx depcheck",
-    "lint:eslint": "eslint ."
-  },
-  "devDependencies": {
-    "@blissy/eslint-config": "workspace:^",
-    "npm-run-all2": "^9.0.0"
-  },
-  "peerDependencies": {
-    "eslint": "*"
   }
 }

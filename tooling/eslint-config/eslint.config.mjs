@@ -1,4 +1,4 @@
-import base from "./config/recommended.mjs";
+import recommended from "./config/recommended.mjs";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -6,5 +6,5 @@ export default [
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
 
   // Config
-  ...base,
+  ...recommended,
 ];
