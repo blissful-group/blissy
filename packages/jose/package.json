@@ -37,6 +37,9 @@
     "lint:tsc": "tsc",
     "test": "vitest run"
   },
+  "dependencies": {
+    "effect": "^3.21.2"
+  },
   "devDependencies": {
     "@blissy/eslint-config": "workspace:^",
     "@blissy/typescript-config": "workspace:^",
