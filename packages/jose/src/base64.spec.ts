@@ -2,6 +2,7 @@ import { Effect } from "effect";
 import { expect, it } from "vitest";
 
 import { Base64 } from "./base64";
+import { Base64DecodeError } from "./base64.errors";
 
 it("encodes bytes using URL-safe base64 without padding", () => {
   const singleByte = Uint8Array.of(255);
@@ -37,25 +38,31 @@ it("decodes URL-safe base64 without padding", () => {
 it("rejects base64url input containing whitespace", () => {
   const input = "-_8\n";
   const effect = Effect.match(Base64.decode(input), {
-    onFailure: (decodeError) => decodeError.message,
+    onFailure: (decodeError) => decodeError,
     onSuccess: () => null,
   });
 
   const error = Effect.runSync(effect);
 
-  expect(error).toBe("Invalid base64url string: whitespace is not allowed");
+  expect(error).toBeInstanceOf(Base64DecodeError);
+  expect(error?._tag).toBe("Base64DecodeError");
+  expect(error?.message).toBe(
+    "Invalid base64url string: whitespace is not allowed",
+  );
 });
 
 it("rejects base64url input containing non-url-safe characters", () => {
   const input = "+/8";
   const effect = Effect.match(Base64.decode(input), {
-    onFailure: (decodeError) => decodeError.message,
+    onFailure: (decodeError) => decodeError,
     onSuccess: () => null,
   });
 
   const error = Effect.runSync(effect);
 
-  expect(error).toBe(
+  expect(error).toBeInstanceOf(Base64DecodeError);
+  expect(error?._tag).toBe("Base64DecodeError");
+  expect(error?.message).toBe(
     "Invalid base64url string: contains non-URL-safe characters",
   );
 });
@@ -63,11 +70,13 @@ it("rejects base64url input containing non-url-safe characters", () => {
 it("rejects malformed base64url input", () => {
   const input = "A";
   const effect = Effect.match(Base64.decode(input), {
-    onFailure: (decodeError) => decodeError.message,
+    onFailure: (decodeError) => decodeError,
     onSuccess: () => null,
   });
 
   const error = Effect.runSync(effect);
 
-  expect(error).toBe("Invalid base64url string: malformed input");
+  expect(error).toBeInstanceOf(Base64DecodeError);
+  expect(error?._tag).toBe("Base64DecodeError");
+  expect(error?.message).toBe("Invalid base64url string: malformed input");
 });

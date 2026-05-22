@@ -6,11 +6,15 @@
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
   "homepage": "https://github.com/blissful-group/blissy#readme",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
+      "source": "./index.ts",
       "import": {
         "types": "./dist/index.d.mts",
         "default": "./dist/index.mjs"
@@ -35,7 +39,9 @@
     "lint:dependencies": "pnpx depcheck",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc",
-    "test": "vitest run"
+    "test": "run-p test:unit test:bench",
+    "test:unit": "vitest run",
+    "test:bench": "vitest bench --run"
   },
   "dependencies": {
     "effect": "^3.21.2"

@@ -4,10 +4,11 @@ import {
   BASE64_URL_ALPHABET,
   BASE64_URL_CHARACTERS,
   WHITESPACE_PATTERN,
-} from "./utils/constants";
+} from "./base64.constants";
+import { Base64DecodeError } from "./base64.errors";
 
 export class Base64 {
-  static encode(bytes: Uint8Array): Effect.Effect<string> {
+  static encode(bytes: Uint8Array) {
     return Effect.sync(() => {
       let output = "";
 
@@ -32,29 +33,37 @@ export class Base64 {
     });
   }
 
-  static decode(input: string): Effect.Effect<Uint8Array, Error> {
+  static decode(input: string) {
     return Effect.gen(function* () {
       if (WHITESPACE_PATTERN.test(input)) {
-        return yield* Effect.fail(
-          new Error("Invalid base64url string: whitespace is not allowed"),
-        );
+        const error = new Base64DecodeError({
+          message: "Invalid base64url string: whitespace is not allowed",
+        });
+
+        return yield* Effect.fail(error);
       }
 
       if (!BASE64_URL_CHARACTERS.test(input)) {
-        return yield* Effect.fail(
-          new Error(
-            "Invalid base64url string: contains non-URL-safe characters",
-          ),
-        );
+        const error = new Base64DecodeError({
+          message: "Invalid base64url string: contains non-URL-safe characters",
+        });
+
+        return yield* Effect.fail(error);
       }
 
       if (input.length % 4 === 1) {
-        return yield* Effect.fail(
-          new Error("Invalid base64url string: malformed input"),
-        );
+        const error = new Base64DecodeError({
+          message: "Invalid base64url string: malformed input",
+        });
+
+        return yield* Effect.fail(error);
       }
 
-      const output: number[] = [];
+      const fullChunksLength = Math.floor(input.length / 4) * 3;
+      const trailingChunkLength = Math.max(0, (input.length % 4) - 1);
+      const outputLength = fullChunksLength + trailingChunkLength;
+      const output = new Uint8Array(outputLength);
+      let outputIndex = 0;
 
       for (let index = 0; index < input.length; index += 4) {
         const a = BASE64_URL_ALPHABET.indexOf(input[index]!);
@@ -68,18 +77,21 @@ export class Base64 {
             ? undefined
             : BASE64_URL_ALPHABET.indexOf(input[index + 3]);
 
-        output.push((a << 2) | (b >> 4));
+        output[outputIndex] = (a << 2) | (b >> 4);
+        outputIndex += 1;
 
         if (c !== undefined) {
-          output.push(((b & 0b1111) << 4) | (c >> 2));
+          output[outputIndex] = ((b & 0b1111) << 4) | (c >> 2);
+          outputIndex += 1;
         }
 
         if (d !== undefined && c !== undefined) {
-          output.push(((c & 0b11) << 6) | d);
+          output[outputIndex] = ((c & 0b11) << 6) | d;
+          outputIndex += 1;
         }
       }
 
-      return Uint8Array.from(output);
+      return output;
     });
   }
 }

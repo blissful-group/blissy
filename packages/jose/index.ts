@@ -1,1 +1,1 @@
-console.info("hello world");
+export { Base64 } from "./src/base64";
