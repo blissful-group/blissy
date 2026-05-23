@@ -48,21 +48,10 @@ export class JWK {
     return Effect.gen(function* () {
       const parsedSet = yield* JWK.parseSet(set);
       const matches = parsedSet.keys.filter((key) => {
-        if (kid !== undefined && key.kid !== kid) {
-          return false;
-        }
-
-        if (alg !== undefined && key.alg !== alg) {
-          return false;
-        }
-
-        if (kty !== undefined && key.kty !== kty) {
-          return false;
-        }
-
-        if (use !== undefined && key.use !== use) {
-          return false;
-        }
+        if (kid !== undefined && key.kid !== kid) return false;
+        if (alg !== undefined && key.alg !== alg) return false;
+        if (kty !== undefined && key.kty !== kty) return false;
+        if (use !== undefined && key.use !== use) return false;
 
         return true;
       });
