@@ -30,7 +30,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blissful-group/blissy.git"
+    "url": "https://github.com/blissful-group/blissy"
   },
   "bugs": {
     "url": "https://github.com/blissful-group/blissy/issues"
@@ -42,7 +42,7 @@
     "lint:dependencies": "pnpx depcheck",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc",
-    "publish": "npm publish --provenance",
+    "publish": "npm publish",
     "release": "run-s build publish",
     "test": "run-p test:unit test:bench",
     "test:unit": "vitest run",
