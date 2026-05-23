@@ -61,6 +61,7 @@ jobs:
         with:
           registry-url: https://registry.npmjs.org
           scope: '@blissy-auth'
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
