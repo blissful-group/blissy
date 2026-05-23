@@ -82,6 +82,9 @@ jobs:
             printf -- '- Projects: `%s`\n\n' "$project_list"
           } >> "$GITHUB_STEP_SUMMARY"
 
+          rm -f changeset-status.json
+          rm -f changeset-status.stderr
+
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
