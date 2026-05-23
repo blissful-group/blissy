@@ -16,7 +16,7 @@ jobs:
   # there are unreleased changesets, or publish packages when a release
   # pull request has already been merged into the main branch.
   # ====================================================================
-  build:
+  version_or_release:
     runs-on: ubuntu-latest
     steps:
       - name: Generating token
@@ -50,6 +50,9 @@ jobs:
           auto-install: true
           cache: true
           cache-base: ${{ github.event.repository.default_branch }}
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Summarize pending changesets
         run: |

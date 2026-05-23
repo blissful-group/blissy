@@ -1,4 +1,4 @@
-name: Feature workflow
+name: Feature
 run-name: Feature guards on '${{ github.event.pull_request.title || github.ref_name }}' 🌡️...
 permissions: write-all
 on:
