@@ -1,6 +1,6 @@
-[Back to root](../../README.md)
+[Back to root](https://github.com/blissful-group/blissy/blob/main/README.md)
 
-# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" /> [@blissy-auth/jose](./README.md)
+# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" /> [@blissy-auth/jose](https://github.com/blissful-group/blissy/blob/main/packages/jose/README.md)
 
 Minimal JOSE primitives for TypeScript built on top of Web Crypto and `effect`.
 
