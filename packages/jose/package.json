@@ -1,6 +1,6 @@
 {
   "name": "@blissy-auth/jose",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TypeScript implementation of the JOSE (Javascript Object Signing and Encryption) specifications with support for JWT, JWS, JWE, JWK, JWKS, and JWA, providing standards-compliant signing, verification, encryption, decryption, and key management.",
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
