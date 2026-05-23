@@ -2,7 +2,6 @@ import { Effect } from "effect";
 import { expect, it } from "vitest";
 
 import { JWS } from "./jws";
-import { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -163,7 +162,7 @@ it("rejects tampered payloads", async () => {
 
   const error = await Effect.runPromise(effect);
 
-  expect(error).toBeInstanceOf(JWSVerificationError);
+  expect(error).toBeInstanceOf(JWS.VerificationError);
   expect(error?._tag).toBe("JWSVerificationError");
   expect(error?.message).toBe("Invalid JWS signature");
 });
@@ -195,7 +194,7 @@ it("rejects tampered protected headers", async () => {
   const error = await Effect.runPromise(effect);
 
   expect(protectedSegment).toBe("eyJhbGciOiJIUzI1NiJ9");
-  expect(error).toBeInstanceOf(JWSVerificationError);
+  expect(error).toBeInstanceOf(JWS.VerificationError);
   expect(error?._tag).toBe("JWSVerificationError");
   expect(error?.message).toBe("Invalid JWS signature");
 });
@@ -224,7 +223,7 @@ it("rejects invalid signatures", async () => {
 
   const error = await Effect.runPromise(effect);
 
-  expect(error).toBeInstanceOf(JWSVerificationError);
+  expect(error).toBeInstanceOf(JWS.VerificationError);
   expect(error?._tag).toBe("JWSVerificationError");
   expect(error?.message).toBe("Invalid JWS signature");
 });
@@ -248,7 +247,7 @@ it("rejects unknown critical headers", async () => {
 
   const error = await Effect.runPromise(effect);
 
-  expect(error).toBeInstanceOf(JWSCriticalHeaderError);
+  expect(error).toBeInstanceOf(JWS.CriticalHeaderError);
   expect(error?._tag).toBe("JWSCriticalHeaderError");
   expect(error?.message).toBe('Unknown critical header parameter: "exp"');
 });
@@ -264,7 +263,7 @@ it("rejects malformed compact serializations", async () => {
 
   const error = await Effect.runPromise(effect);
 
-  expect(error).toBeInstanceOf(JWSVerificationError);
+  expect(error).toBeInstanceOf(JWS.VerificationError);
   expect(error?._tag).toBe("JWSVerificationError");
   expect(error?.message).toBe("Invalid compact JWS serialization");
 });

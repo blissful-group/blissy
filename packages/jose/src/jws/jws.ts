@@ -5,13 +5,13 @@ import { SUPPORTED_CRITICAL_HEADERS } from "./jws.constants";
 import { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
 import type { JWSHeader, JWSHeaderValue } from "./jws.types";
 
-export { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
-export type { JWSHeader, JWSHeaderValue } from "./jws.types";
-
 /**
  * Creates and verifies JSON Web Signatures using base64url encoding and HS256.
  */
 export class JWS {
+  static CriticalHeaderError = JWSCriticalHeaderError;
+  static VerificationError = JWSVerificationError;
+
   private static encoder = new TextEncoder();
   private static decoder = new TextDecoder();
 
@@ -230,4 +230,9 @@ export class JWS {
       };
     });
   }
+}
+
+export declare namespace JWS {
+  export type Header = JWSHeader;
+  export type HeaderValue = JWSHeaderValue;
 }
