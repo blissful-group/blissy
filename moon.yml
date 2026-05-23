@@ -2,7 +2,6 @@ layer: tool
 language: bash
 stack: systems
 
-
 tasks:
   changeset:
     description: Add new changeset entries

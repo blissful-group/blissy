@@ -1,0 +1,18 @@
+inheritedBy:
+  language: bash
+
+taskOptions:
+  cache: false
+
+tasks:
+  workflow_purge:
+    description: Delete all GitHub workflow runs
+    script: |
+      repo="$(gh repo view --json nameWithOwner --jq '.nameWithOwner')"
+      gh api --paginate "repos/${repo}/actions/runs?per_page=100" --jq '.workflow_runs[].id' |
+        while read -r run_id; do
+          [ -n "$run_id" ] || continue
+          gh api -X DELETE "repos/${repo}/actions/runs/${run_id}"
+        done
+    options:
+      cache: false
