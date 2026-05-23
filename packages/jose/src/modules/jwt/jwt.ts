@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 
+import { Base64 } from "../../utils/base64";
 import { JWS } from "../jws/jws";
-import { Base64 } from "../utils/base64";
 import {
   JWTClaimValidationError,
   JWTDecodeError,

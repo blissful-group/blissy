@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 
-import { Base64 } from "../utils/base64";
+import { Base64 } from "../../utils/base64";
 import { SUPPORTED_CRITICAL_HEADERS } from "./jws.constants";
 import { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
 import type { JWSHeader, JWSHeaderValue } from "./jws.types";
