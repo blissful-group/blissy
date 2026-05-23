@@ -6,7 +6,9 @@
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
   "homepage": "https://github.com/blissful-group/blissy#readme",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true,
+    "registry": "https://registry.npmjs.org/"
   },
   "type": "module",
   "files": [
