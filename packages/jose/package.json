@@ -44,7 +44,8 @@
     "lint:dependencies": "pnpx depcheck",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc",
-    "prepack": "tsdown",
+    "publish": "npm publish",
+    "release": "run-s build publish",
     "test": "run-p test:unit test:bench",
     "test:unit": "vitest run",
     "test:bench": "vitest bench --run"
