@@ -19,10 +19,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Generating token
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.BG_PIPELINE_APP_ID }}
+          private-key: ${{ secrets.BG_PIPELINE_APP_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Cache local dependencies
         if: inputs.cache-name
@@ -73,11 +81,9 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: moon ci :publish
-        # TODO - disable actual publishing
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          publish: moon ci :release
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Summarize release action result
         if: always()

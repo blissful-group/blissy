@@ -1,5 +1,5 @@
 {
-  "name": "@blissy/eslint-config",
+  "name": "@blissy-auth/eslint-config",
   "description": "Blissy eslint configuration package",
   "private": true,
   "license": "MIT",
@@ -13,7 +13,6 @@
   "bugs": {
     "url": "https://github.com/blissful-group/blissy/issues"
   },
-  "main": "./eslint.config.mjs",
   "bin": {
     "eslint": "./node_modules/.bin/eslint"
   },
@@ -27,7 +26,7 @@
     "lint:eslint": "eslint ."
   },
   "devDependencies": {
-    "@blissy/typescript-config": "workspace:^",
+    "@blissy-auth/typescript-config": "workspace:^",
     "@eslint/js": "^9.39.4",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
