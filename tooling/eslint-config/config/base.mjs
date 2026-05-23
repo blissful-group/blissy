@@ -1,4 +1,4 @@
-import typescript from "@blissy/typescript-config/resolvers";
+import typescript from "@blissy-auth/typescript-config/resolvers";
 import pluginJs from "@eslint/js";
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import importPlugin from "eslint-plugin-import";

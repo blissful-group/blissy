@@ -1,6 +1,6 @@
 [Back to root](../../README.md)
 
-# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" /> [@blissy/jose](./README.md)
+# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" /> [@blissy-auth/jose](./README.md)
 
 Minimal JOSE primitives for TypeScript built on top of Web Crypto and `effect`.
 
@@ -80,7 +80,7 @@ This package intentionally implements a small supported subset today.
 
 ```ts
 import { Effect } from "effect";
-import { JWE, JWK, JWKS, JWA, JWS, JWT } from "@blissy/jose";
+import { JWE, JWK, JWKS, JWA, JWS, JWT } from "@blissy-auth/jose";
 ```
 
 ## JWA
@@ -89,7 +89,7 @@ Use `JWA` when you want to sign or verify raw bytes directly.
 
 ```ts
 import { Effect } from "effect";
-import { JWA } from "@blissy/jose";
+import { JWA } from "@blissy-auth/jose";
 
 const encoder = new TextEncoder();
 const key = encoder.encode("super-secret-signing-key");
@@ -128,7 +128,7 @@ Use `JWS` for JOSE signature serializations.
 
 ```ts
 import { Effect } from "effect";
-import { JWS } from "@blissy/jose";
+import { JWS } from "@blissy-auth/jose";
 
 const encoder = new TextEncoder();
 const key = encoder.encode("super-secret-signing-key");
@@ -189,7 +189,7 @@ Use `JWE` for encrypted JOSE payloads.
 
 ```ts
 import { Effect } from "effect";
-import { JWE } from "@blissy/jose";
+import { JWE } from "@blissy-auth/jose";
 
 const encoder = new TextEncoder();
 const key = encoder.encode("0123456789abcdef0123456789abcdef");
@@ -267,7 +267,7 @@ Use `JWT` for claims-based tokens built on top of `JWS`.
 
 ```ts
 import { Effect } from "effect";
-import { JWT } from "@blissy/jose";
+import { JWT } from "@blissy-auth/jose";
 
 const encoder = new TextEncoder();
 const key = encoder.encode("super-secret-signing-key");
@@ -331,7 +331,7 @@ Use `JWK` for working with JWK Sets directly.
 
 ```ts
 import { Effect } from "effect";
-import { JWK } from "@blissy/jose";
+import { JWK } from "@blissy-auth/jose";
 
 const set: JWK.Set = {
   keys: [
@@ -369,7 +369,7 @@ Use `JWKS` for JWKS-shaped documents with the same filtering behavior as `JWK`.
 
 ```ts
 import { Effect } from "effect";
-import { JWKS } from "@blissy/jose";
+import { JWKS } from "@blissy-auth/jose";
 
 const set: JWKS.Set = {
   keys: [
@@ -408,7 +408,7 @@ All APIs return `Effect`s and fail with tagged errors.
 
 ```ts
 import { Effect } from "effect";
-import { JWT } from "@blissy/jose";
+import { JWT } from "@blissy-auth/jose";
 
 const outcome = await Effect.runPromise(
   Effect.match(JWT.verify({ token, key }), {

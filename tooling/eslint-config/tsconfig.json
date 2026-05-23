@@ -1,5 +1,5 @@
 {
-  "extends": "@blissy/typescript-config/tsconfig.base",
+  "extends": "@blissy-auth/typescript-config/tsconfig.base",
   "compilerOptions": {
     /* Options */
     "allowJs": true,

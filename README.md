@@ -4,9 +4,9 @@ The simple auth library.
 
 ## Repository
 
-Monorepository for the `@blissy` authentication packages.
+Monorepository for the `@blissy-auth` authentication packages.
 
-This repository contains the packages and shared code used to build auth for the `@blissy` ecosystem.
+This repository contains the packages and shared code used to build auth for the `@blissy-auth` ecosystem.
 
 ## Dependencies
 
@@ -18,7 +18,7 @@ The packages in this repository aim to keep dependencies intentionally small.
 
 ## Packages
 
-- [`@blissy/jose`](./packages/jose/README.md): JOSE primitives for `JWA`, `JWE`, `JWK`, `JWKS`, `JWS`, and `JWT`
+- [`@blissy-auth/jose`](./packages/jose/README.md): JOSE primitives for `JWA`, `JWE`, `JWK`, `JWKS`, `JWS`, and `JWT`
 
 ## Getting Started
 

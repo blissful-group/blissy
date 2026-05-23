@@ -30,10 +30,10 @@ importers:
         specifier: '*'
         version: 6.0.3
     devDependencies:
-      '@blissy/eslint-config':
+      '@blissy-auth/eslint-config':
         specifier: workspace:^
         version: link:../../tooling/eslint-config
-      '@blissy/typescript-config':
+      '@blissy-auth/typescript-config':
         specifier: workspace:^
         version: link:../../tooling/typescript-config
       '@vitest/coverage-v8':
@@ -58,7 +58,7 @@ importers:
         specifier: '*'
         version: 6.0.3
     devDependencies:
-      '@blissy/typescript-config':
+      '@blissy-auth/typescript-config':
         specifier: workspace:^
         version: link:../typescript-config
       '@eslint/js':

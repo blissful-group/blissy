@@ -1,4 +1,4 @@
-import recommended from "@blissy/eslint-config/recommended";
+import recommended from "@blissy-auth/eslint-config/recommended";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
