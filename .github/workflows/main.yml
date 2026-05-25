@@ -102,6 +102,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
+      - name: Print npm debug logs
+        if: failure()
+        run: |
+          set -euo pipefail
+
+          for log in /home/runner/.npm/_logs/*-debug-0.log; do
+            printf '\n===== %s =====\n' "$log"
+            sed -E 's#(//registry\.npmjs\.org/:_authToken=).+#\1[redacted]#g' "$log"
+          done
+
       - name: Summarize release action result
         if: always()
         run: |
