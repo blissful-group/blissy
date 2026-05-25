@@ -56,12 +56,6 @@ jobs:
           cache: true
           cache-base: ${{ github.event.repository.default_branch }}
 
-      - name: Configure npm registry auth
-        uses: actions/setup-node@v6
-        with:
-          registry-url: https://registry.npmjs.org
-          scope: '@blissy-auth'
-
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
