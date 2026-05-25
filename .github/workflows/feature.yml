@@ -153,6 +153,11 @@ jobs:
         id: run-tests
         run: moon ci :test
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Summarize test result
         if: always()
         run: |
