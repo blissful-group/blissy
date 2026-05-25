@@ -20,6 +20,7 @@ jobs:
   # pull request has already been merged into the main branch.
   # ====================================================================
   version_or_release:
+    name: "Version or release #️⃣ / 🚀..."
     runs-on: ubuntu-latest
     env:
       HUSKY: 0
