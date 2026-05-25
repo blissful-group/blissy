@@ -37,6 +37,18 @@
   "bugs": {
     "url": "https://github.com/blissful-group/blissy/issues"
   },
+  "keywords": [
+    "jose",
+    "jwt",
+    "jws",
+    "jwe",
+    "jwk",
+    "jwks",
+    "jwa",
+    "webcrypto",
+    "authentication",
+    "authorization"
+  ],
   "scripts": {
     "build": "tsdown",
     "format": "eslint . --fix",
