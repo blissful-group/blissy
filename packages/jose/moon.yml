@@ -16,3 +16,5 @@ tasks:
 
   release:
     command: pnpm release
+    toolchains:
+      - npm

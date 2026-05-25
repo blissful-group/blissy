@@ -9,6 +9,9 @@ javascript:
 
 node: {}
 
+npm:
+  version: "~11.15"
+
 pnpm: {
   installDependencies: true
 }
