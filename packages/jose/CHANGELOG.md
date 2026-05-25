@@ -1,5 +1,11 @@
 # @blissy-auth/jose
 
+## 0.0.3
+
+### Patch Changes
+
+- 161e927: Add keywords
+
 ## 0.0.2
 
 ### Patch Changes
