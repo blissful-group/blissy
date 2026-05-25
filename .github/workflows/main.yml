@@ -92,6 +92,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
+          commit: Version Packages [skip ci]
           publish: moon ci :release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

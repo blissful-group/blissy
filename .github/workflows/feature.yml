@@ -1,15 +1,14 @@
 name: Feature
-run-name: Feature guards on '${{ github.event.pull_request.title || github.ref_name }}' 🌡️...
+run-name: Feature checks on '${{ github.event.pull_request.title || github.ref_name }}' 🌡️...
 permissions: write-all
 on:
   pull_request:
 jobs:
-  # =============================================================
-  # Verifies that unreleased changesets are valid for the branch.
-  # =============================================================
+  # ==========
+  # Changesets
+  # ==========
   changeset:
     name: Checking changesets 📝...
-    if: ${{ !contains(github.head_ref, 'changeset-release') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,9 +23,9 @@ jobs:
           path: |
             ~/.local
             ~/.pnpm-store
-          key: cache-local-changeset-${{ hashFiles('**/package.json') }}
+          key: cache-local-feature-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            cache-local-changeset
+            cache-local-feature
             cache-local-
 
       - name: Inject Moon
@@ -61,12 +60,11 @@ jobs:
             printf -- '- Status: `%s`\n\n' '${{ steps.check-changesets.conclusion }}'
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # =============================================================
-  # Runs the standard lint and test targets for pull requests.
-  # =============================================================
-  test:
-    name: Running tests 🌡️...
-    if: ${{ !contains(github.head_ref, 'changeset-release') }}
+  # =======
+  # Linting
+  # =======
+  lint:
+    name: Running lint 🔬...
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -81,9 +79,9 @@ jobs:
           path: |
             ~/.local
             ~/.pnpm-store
-          key: cache-local-test-${{ hashFiles('**/package.json') }}
+          key: cache-local-feature-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            cache-local-test
+            cache-local-feature
             cache-local-
 
       - name: Inject Moon
@@ -99,27 +97,9 @@ jobs:
       - name: Add local binaries to PATH
         run: echo "~/.local/bin" >> $GITHUB_PATH
 
-      - name: Summarize test scope
-        run: |
-          set -euo pipefail
-
-          moon query changed-files --base "${{ github.event.pull_request.base.sha }}" --head HEAD > changed-files.json
-          moon query projects --affected < changed-files.json > affected-projects.json
-
-          changed_file_count=$(jq 'length' changed-files.json)
-          affected_project_count=$(jq '.projects | length' affected-projects.json)
-          affected_projects=$(jq -r '.projects | map(.id) | unique | sort | if length == 0 then "none" else join(", ") end' affected-projects.json)
-
-          {
-            printf '### Test scope\n\n'
-            printf -- '- Changed files found by `moon query changed-files`: `%s`\n' "$changed_file_count"
-            printf -- '- Affected projects found by `moon query projects --affected`: `%s`\n' "$affected_project_count"
-            printf -- '- Projects: `%s`\n\n' "$affected_projects"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Run tests 🌡️...
-        id: run-tests
-        run: moon ci :lint :test
+      - name: Run lint 🔬...
+        id: run-lint
+        run: moon ci :lint
 
       - name: Summarize test result
         if: always()
@@ -128,6 +108,58 @@ jobs:
 
           {
             printf '### Test result\n\n'
-            printf -- '- Lint and test command: `moon ci :lint :test`\n'
+            printf -- '- Lint command: `moon ci :lint`\n'
+            printf -- '- Result: `%s`\n\n' '${{ steps.run-lint.outcome }}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ==========
+  # Unit tests
+  # ==========
+  test:
+    name: Running tests 🌡️...
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Cache local dependencies
+        if: inputs.cache-name
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local
+            ~/.pnpm-store
+          key: cache-local-feature-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            cache-local-feature
+            cache-local-
+
+      - name: Inject Moon
+        uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+          cache: true
+          cache-base: ${{ github.event.repository.default_branch }}
+
+      - name: Set pnpm store directory
+        run: pnpm config set store-dir "~/.pnpm-store"
+
+      - name: Add local binaries to PATH
+        run: echo "~/.local/bin" >> $GITHUB_PATH
+
+      - name: Run tests 🌡️...
+        id: run-tests
+        run: moon ci :test
+
+      - name: Summarize test result
+        if: always()
+        run: |
+          set -euo pipefail
+
+          {
+            printf '### Test result\n\n'
+            printf -- '- Test command: `moon ci :test`\n'
             printf -- '- Result: `%s`\n\n' '${{ steps.run-tests.outcome }}'
           } >> "$GITHUB_STEP_SUMMARY"
