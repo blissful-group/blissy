@@ -1,5 +1,11 @@
 # @blissy-auth/jose
 
+## 0.0.4
+
+### Patch Changes
+
+- d887fb3: Add codecov report uploading
+
 ## 0.0.3
 
 ### Patch Changes
