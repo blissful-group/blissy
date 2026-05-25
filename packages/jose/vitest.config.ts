@@ -7,7 +7,7 @@ export default defineConfig({
     coverage: {
       enabled: true,
       exclude: ["**/*.*.ts"],
-      reporter: [["text", { skipFull: false }], "html"],
+      reporter: [["text", { skipFull: false }], "json"],
       thresholds: {
         lines: 100,
         functions: 100,
