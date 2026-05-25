@@ -1,4 +1,8 @@
-# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" height="28" />[Blissy](https://github.com/blissful-group/blissy)
+# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" height="28" />- [Blissy](https://github.com/blissful-group/blissy)
+
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/blissful-group/blissy/main.yml)
+[![codecov](https://codecov.io/gh/blissful-group/blissy/graph/badge.svg?token=JQFUkDtwcb)](https://codecov.io/gh/blissful-group/blissy)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/blissful89)](https://github.com/Blissful89)
 
 The simple auth library.
 
