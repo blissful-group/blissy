@@ -1,5 +1,11 @@
 # @blissy-auth/jose
 
+## 0.0.6
+
+### Patch Changes
+
+- d91ce09: Refactor updates and cleanup
+
 ## 0.0.5
 
 ### Patch Changes
