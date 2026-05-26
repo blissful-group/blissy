@@ -1,9 +1,9 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
 import { OAuth2PKCE } from "../pkce/pkce";
 import { OAuth2Scope } from "../scope/scope";
-import { RESERVED_AUTHORIZATION_REQUEST_PARAMETERS } from "./authorization-request.constants";
 import { AuthorizationRequestValidationError } from "./authorization-request.errors";
+import { AuthorizationRequestReservedParameterSchema } from "./authorization-request.schema";
 
 /**
  * Builds OAuth 2.0 authorization endpoint request URLs.
@@ -77,7 +77,7 @@ export class OAuth2AuthorizationRequest {
       }
 
       for (const [parameter, value] of Object.entries(parameters ?? {})) {
-        if (RESERVED_AUTHORIZATION_REQUEST_PARAMETERS.has(parameter)) {
+        if (OAuth2AuthorizationRequest.isReservedParameter(parameter)) {
           const error = new AuthorizationRequestValidationError({
             message: "Invalid authorization request parameter",
             parameter,
@@ -97,19 +97,20 @@ export class OAuth2AuthorizationRequest {
     value: string,
     message: "Invalid authorization endpoint" | "Invalid redirect uri",
   ) {
-    return Effect.try({
-      catch: () => new AuthorizationRequestValidationError({ message }),
-      try: () => new URL(value),
-    });
+    return Effect.mapError(
+      Schema.decodeUnknown(Schema.URL)(value),
+      () => new AuthorizationRequestValidationError({ message }),
+    );
   }
 
   private static validateNonEmpty(value: string, message: "Invalid client id") {
-    return Effect.gen(function* () {
-      if (value === "") {
-        const error = new AuthorizationRequestValidationError({ message });
+    return Effect.mapError(
+      Schema.decodeUnknown(Schema.NonEmptyString)(value),
+      () => new AuthorizationRequestValidationError({ message }),
+    );
+  }
 
-        return yield* Effect.fail(error);
-      }
-    });
+  private static isReservedParameter(value: string) {
+    return Schema.is(AuthorizationRequestReservedParameterSchema)(value);
   }
 }

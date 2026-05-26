@@ -1,4 +1,6 @@
-export const RESERVED_AUTHORIZATION_REQUEST_PARAMETERS = new Set([
+import { Schema } from "effect";
+
+export const AuthorizationRequestReservedParameterSchema = Schema.Literal(
   "client_id",
   "code_challenge",
   "code_challenge_method",
@@ -6,4 +8,4 @@ export const RESERVED_AUTHORIZATION_REQUEST_PARAMETERS = new Set([
   "response_type",
   "scope",
   "state",
-]);
+);

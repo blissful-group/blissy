@@ -158,35 +158,32 @@ export class OAuth2AuthorizationResponse {
   }
 
   private static parseUrl(callbackUrl: string) {
-    return Effect.try({
-      try: () => new URL(callbackUrl),
-      catch: () => {
-        return new AuthorizationResponseValidationError({
+    return Effect.mapError(
+      Schema.decodeUnknown(Schema.URL)(callbackUrl),
+      () =>
+        new AuthorizationResponseValidationError({
           message: "Invalid authorization callback URL",
-        });
-      },
-    });
+        }),
+    );
   }
 
   private static parseErrorUri(errorUri: string) {
     return Effect.gen(function* () {
       yield* Effect.mapError(
         Schema.decodeUnknown(AuthorizationErrorUriSchema)(errorUri),
-        () => {
-          return new AuthorizationResponseValidationError({
+        () =>
+          new AuthorizationResponseValidationError({
             message: "Invalid authorization error URI",
-          });
-        },
+          }),
       );
 
-      return yield* Effect.try({
-        try: () => new URL(errorUri),
-        catch: () => {
-          return new AuthorizationResponseValidationError({
+      return yield* Effect.mapError(
+        Schema.decodeUnknown(Schema.URL)(errorUri),
+        () =>
+          new AuthorizationResponseValidationError({
             message: "Invalid authorization error URI",
-          });
-        },
-      });
+          }),
+      );
     });
   }
 }

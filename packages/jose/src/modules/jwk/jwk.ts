@@ -1,6 +1,8 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
+import { Filters } from "../../utils/filters";
 import { JWKKeyMatchError, JWKSetParseError } from "./jwk.errors";
+import { JWKSetSchema } from "./jwk.schema";
 import type { JWKKey, JWKSet, JWKValue } from "./jwk.types";
 
 export { JWKKeyMatchError, JWKSetParseError } from "./jwk.errors";
@@ -16,45 +18,22 @@ export class JWK {
    * Validates and returns a JWK Set.
    */
   static parseSet(input: unknown) {
-    return Effect.gen(function* () {
-      if (!JWK.isSet(input)) {
-        return yield* Effect.fail(
-          new JWKSetParseError({
-            message: "Invalid JWK Set: missing keys array",
-          }),
-        );
-      }
-
-      return input;
-    });
+    return Effect.mapError(
+      Schema.decodeUnknown(JWKSetSchema)(input),
+      () =>
+        new JWKSetParseError({
+          message: "Invalid JWK Set: missing keys array",
+        }),
+    );
   }
 
   /**
    * Finds a single key in a JWK Set matching the given criteria.
    */
-  static findKey({
-    alg,
-    kid,
-    kty,
-    set,
-    use,
-  }: {
-    set: JWKSet;
-    kid?: string;
-    alg?: string;
-    kty?: string;
-    use?: string;
-  }) {
+  static findKey({ set, ...args }: Filters.Input & { set: JWKSet }) {
     return Effect.gen(function* () {
       const parsedSet = yield* JWK.parseSet(set);
-      const matches = parsedSet.keys.filter((key) => {
-        if (kid !== undefined && key.kid !== kid) return false;
-        if (alg !== undefined && key.alg !== alg) return false;
-        if (kty !== undefined && key.kty !== kty) return false;
-        if (use !== undefined && key.use !== use) return false;
-
-        return true;
-      });
+      const matches = parsedSet.keys.filter(Filters.keys(args));
 
       if (matches.length > 1) {
         return yield* Effect.fail(
@@ -66,15 +45,6 @@ export class JWK {
 
       return matches[0];
     });
-  }
-
-  private static isSet(input: unknown): input is JWKSet {
-    return (
-      typeof input === "object" &&
-      input !== null &&
-      "keys" in input &&
-      Array.isArray(input.keys)
-    );
   }
 }
 

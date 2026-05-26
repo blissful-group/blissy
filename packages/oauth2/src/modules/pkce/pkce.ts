@@ -40,20 +40,18 @@ export class OAuth2PKCE {
     return Effect.gen(function* () {
       yield* Effect.mapError(
         Schema.decodeUnknown(CodeVerifierLengthSchema)(codeVerifier),
-        () => {
-          return new CodeVerifierValidationError({
+        () =>
+          new CodeVerifierValidationError({
             message: "Invalid PKCE code verifier length",
-          });
-        },
+          }),
       );
 
       yield* Effect.mapError(
         Schema.decodeUnknown(CodeVerifierCharactersSchema)(codeVerifier),
-        () => {
-          return new CodeVerifierValidationError({
+        () =>
+          new CodeVerifierValidationError({
             message: "Invalid PKCE code verifier characters",
-          });
-        },
+          }),
       );
     });
   }
@@ -84,12 +82,12 @@ export class OAuth2PKCE {
         return codeVerifier;
       }
 
-      const digest = yield* Effect.tryPromise(() => {
-        return globalThis.crypto.subtle.digest(
+      const digest = yield* Effect.tryPromise(() =>
+        globalThis.crypto.subtle.digest(
           "SHA-256",
           OAuth2PKCE.encoder.encode(codeVerifier),
-        );
-      });
+        ),
+      );
 
       return OAuth2PKCE.encodeBase64Url(new Uint8Array(digest));
     });

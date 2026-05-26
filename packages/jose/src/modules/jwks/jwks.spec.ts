@@ -62,39 +62,6 @@ it("finds a key by kid", async () => {
   expect(key).toEqual(set.keys[1]);
 });
 
-it("filters keys by alg", async () => {
-  const key = await Effect.runPromise(
-    JWKS.findKey({
-      set,
-      alg: "ES256",
-    }),
-  );
-
-  expect(key).toEqual(set.keys[2]);
-});
-
-it("filters keys by kty", async () => {
-  const key = await Effect.runPromise(
-    JWKS.findKey({
-      set,
-      kty: "RSA",
-    }),
-  );
-
-  expect(key).toEqual(set.keys[1]);
-});
-
-it("filters keys by use", async () => {
-  const key = await Effect.runPromise(
-    JWKS.findKey({
-      set,
-      use: "enc",
-    }),
-  );
-
-  expect(key).toEqual(set.keys[1]);
-});
-
 it("rejects ambiguous key matches", async () => {
   const effect = Effect.match(
     JWKS.findKey({

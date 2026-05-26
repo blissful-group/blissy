@@ -30,12 +30,11 @@ export class OAuth2State {
     return Effect.gen(function* () {
       yield* Effect.mapError(
         Schema.decodeUnknown(StateByteLengthSchema)(byteLength),
-        () => {
-          return new OAuth2StateGenerationError({
+        () =>
+          new OAuth2StateGenerationError({
             byteLength,
             message: "Invalid OAuth2 state byte length",
-          });
-        },
+          }),
       );
 
       const bytes = new Uint8Array(byteLength);

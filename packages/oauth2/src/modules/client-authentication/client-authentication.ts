@@ -1,6 +1,7 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
 import { OAuth2ClientAuthenticationError } from "./client-authentication.errors";
+import { ClientCredentialSchema } from "./client-authentication.schema";
 
 /**
  * Builds reusable OAuth 2.0 client authentication request fragments.
@@ -95,27 +96,23 @@ export class OAuth2ClientAuthentication {
   }
 
   private static validateClientId(clientId: string) {
-    return Effect.gen(function* () {
-      if (clientId === "") {
-        const error = new OAuth2ClientAuthenticationError({
+    return Effect.mapError(
+      Schema.decodeUnknown(ClientCredentialSchema)(clientId),
+      () =>
+        new OAuth2ClientAuthenticationError({
           message: "Invalid OAuth2 client id",
-        });
-
-        return yield* Effect.fail(error);
-      }
-    });
+        }),
+    );
   }
 
   private static validateClientSecret(clientSecret: string) {
-    return Effect.gen(function* () {
-      if (clientSecret === "") {
-        const error = new OAuth2ClientAuthenticationError({
+    return Effect.mapError(
+      Schema.decodeUnknown(ClientCredentialSchema)(clientSecret),
+      () =>
+        new OAuth2ClientAuthenticationError({
           message: "Invalid OAuth2 client secret",
-        });
-
-        return yield* Effect.fail(error);
-      }
-    });
+        }),
+    );
   }
 
   private static formEncode(value: string) {
