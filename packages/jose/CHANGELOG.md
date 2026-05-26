@@ -1,5 +1,11 @@
 # @blissy-auth/jose
 
+## 0.0.5
+
+### Patch Changes
+
+- e726038: Update package.json with correct source exports for internal workspace usage
+
 ## 0.0.4
 
 ### Patch Changes
