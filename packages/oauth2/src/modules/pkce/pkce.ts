@@ -1,15 +1,15 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
-import {
-  CODE_VERIFIER_MAX_LENGTH,
-  CODE_VERIFIER_MIN_LENGTH,
-  CODE_VERIFIER_PATTERN,
-} from "./pkce.constants";
 import {
   CodeChallengeMethodError,
   CodeChallengeVerificationError,
   CodeVerifierValidationError,
 } from "./pkce.errors";
+import {
+  CodeChallengeMethodSchema,
+  CodeVerifierCharactersSchema,
+  CodeVerifierLengthSchema,
+} from "./pkce.schema";
 import type { OAuth2PKCECodeChallengeMethod } from "./pkce.types";
 
 /**
@@ -38,24 +38,23 @@ export class OAuth2PKCE {
    */
   static validateCodeVerifier(codeVerifier: string) {
     return Effect.gen(function* () {
-      if (
-        codeVerifier.length < CODE_VERIFIER_MIN_LENGTH ||
-        codeVerifier.length > CODE_VERIFIER_MAX_LENGTH
-      ) {
-        const error = new CodeVerifierValidationError({
-          message: "Invalid PKCE code verifier length",
-        });
+      yield* Effect.mapError(
+        Schema.decodeUnknown(CodeVerifierLengthSchema)(codeVerifier),
+        () => {
+          return new CodeVerifierValidationError({
+            message: "Invalid PKCE code verifier length",
+          });
+        },
+      );
 
-        return yield* Effect.fail(error);
-      }
-
-      if (!CODE_VERIFIER_PATTERN.test(codeVerifier)) {
-        const error = new CodeVerifierValidationError({
-          message: "Invalid PKCE code verifier characters",
-        });
-
-        return yield* Effect.fail(error);
-      }
+      yield* Effect.mapError(
+        Schema.decodeUnknown(CodeVerifierCharactersSchema)(codeVerifier),
+        () => {
+          return new CodeVerifierValidationError({
+            message: "Invalid PKCE code verifier characters",
+          });
+        },
+      );
     });
   }
 
@@ -72,27 +71,27 @@ export class OAuth2PKCE {
     return Effect.gen(function* () {
       yield* OAuth2PKCE.validateCodeVerifier(codeVerifier);
 
+      if (!Schema.is(CodeChallengeMethodSchema)(method)) {
+        const error = new CodeChallengeMethodError({
+          message: "Unsupported PKCE code challenge method",
+          method,
+        });
+
+        return yield* Effect.fail(error);
+      }
+
       if (method === "plain") {
         return codeVerifier;
       }
 
-      if (method === "S256") {
-        const digest = yield* Effect.tryPromise(() =>
-          globalThis.crypto.subtle.digest(
-            "SHA-256",
-            OAuth2PKCE.encoder.encode(codeVerifier),
-          ),
+      const digest = yield* Effect.tryPromise(() => {
+        return globalThis.crypto.subtle.digest(
+          "SHA-256",
+          OAuth2PKCE.encoder.encode(codeVerifier),
         );
-
-        return OAuth2PKCE.encodeBase64Url(new Uint8Array(digest));
-      }
-
-      const error = new CodeChallengeMethodError({
-        message: "Unsupported PKCE code challenge method",
-        method,
       });
 
-      return yield* Effect.fail(error);
+      return OAuth2PKCE.encodeBase64Url(new Uint8Array(digest));
     });
   }
 

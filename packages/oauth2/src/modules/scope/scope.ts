@@ -1,7 +1,7 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
-import { SCOPE_TOKEN_PATTERN } from "./scope.constants";
 import { OAuth2ScopeValidationError } from "./scope.errors";
+import { ScopeValueSchema } from "./scope.schema";
 import type { OAuth2ScopeSet, OAuth2ScopeValue } from "./scope.types";
 
 /**
@@ -65,9 +65,9 @@ export class OAuth2Scope {
 
       const uniqueScopes = OAuth2Scope.unique(scopes);
 
-      return OAuth2Scope.unique(requiredScopes).every((requiredScope) =>
-        uniqueScopes.includes(requiredScope),
-      );
+      return OAuth2Scope.unique(requiredScopes).every((requiredScope) => {
+        return uniqueScopes.includes(requiredScope);
+      });
     });
   }
 
@@ -81,9 +81,9 @@ export class OAuth2Scope {
 
       const uniqueScopes = OAuth2Scope.unique(scopes);
 
-      return OAuth2Scope.unique(allowedScopes).some((allowedScope) =>
-        uniqueScopes.includes(allowedScope),
-      );
+      return OAuth2Scope.unique(allowedScopes).some((allowedScope) => {
+        return uniqueScopes.includes(allowedScope);
+      });
     });
   }
 
@@ -104,16 +104,15 @@ export class OAuth2Scope {
   }
 
   private static validate(scope: OAuth2ScopeValue) {
-    return Effect.gen(function* () {
-      if (!SCOPE_TOKEN_PATTERN.test(scope)) {
-        const error = new OAuth2ScopeValidationError({
+    return Effect.mapError(
+      Schema.decodeUnknown(ScopeValueSchema)(scope),
+      () => {
+        return new OAuth2ScopeValidationError({
           message: "Invalid OAuth2 scope",
           scope,
         });
-
-        return yield* Effect.fail(error);
-      }
-    });
+      },
+    );
   }
 
   private static validateAll(scopes: OAuth2ScopeSet) {

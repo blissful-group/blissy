@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
 import { compare } from "../../utils/compare";
 import { STATE_DEFAULT_BYTE_LENGTH } from "./state.constants";
@@ -6,6 +6,7 @@ import {
   OAuth2StateGenerationError,
   OAuth2StateValidationError,
 } from "./state.errors";
+import { StateByteLengthSchema } from "./state.schema";
 import type { OAuth2StateValidationOptions } from "./state.types";
 
 /**
@@ -27,14 +28,15 @@ export class OAuth2State {
    */
   static generate(byteLength = STATE_DEFAULT_BYTE_LENGTH) {
     return Effect.gen(function* () {
-      if (!Number.isInteger(byteLength) || byteLength <= 0) {
-        const error = new OAuth2StateGenerationError({
-          byteLength,
-          message: "Invalid OAuth2 state byte length",
-        });
-
-        return yield* Effect.fail(error);
-      }
+      yield* Effect.mapError(
+        Schema.decodeUnknown(StateByteLengthSchema)(byteLength),
+        () => {
+          return new OAuth2StateGenerationError({
+            byteLength,
+            message: "Invalid OAuth2 state byte length",
+          });
+        },
+      );
 
       const bytes = new Uint8Array(byteLength);
       globalThis.crypto.getRandomValues(bytes);
