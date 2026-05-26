@@ -1,0 +1,1 @@
+export const STATE_DEFAULT_BYTE_LENGTH = 32;

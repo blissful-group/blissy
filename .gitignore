@@ -5,6 +5,9 @@ node_modules
 # builds
 dist/
 
+# ai
+.agents/
+
 # tests
 coverage/
 

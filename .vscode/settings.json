@@ -18,6 +18,7 @@
   },
   "eslint.format.enable": true,
   "conventionalCommits.scopes": [
-    "jose"
+    "jose",
+    "oauth2"
   ]
 }

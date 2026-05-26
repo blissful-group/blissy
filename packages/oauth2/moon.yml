@@ -1,0 +1,20 @@
+language: typescript
+layer: library
+
+tasks:
+  build:
+    command: pnpm build
+
+  format:
+    command: pnpm format
+
+  lint:
+    command: pnpm lint
+
+  test:
+    command: pnpm test
+
+  release:
+    command: pnpm release
+    toolchains:
+      - npm
