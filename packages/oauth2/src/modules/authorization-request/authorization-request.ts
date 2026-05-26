@@ -4,7 +4,6 @@ import { OAuth2PKCE } from "../pkce/pkce";
 import { OAuth2Scope } from "../scope/scope";
 import { RESERVED_AUTHORIZATION_REQUEST_PARAMETERS } from "./authorization-request.constants";
 import { AuthorizationRequestValidationError } from "./authorization-request.errors";
-import type { AuthorizationCodeRequestOptions } from "./authorization-request.types";
 
 /**
  * Builds OAuth 2.0 authorization endpoint request URLs.
@@ -27,7 +26,16 @@ export class OAuth2AuthorizationRequest {
     redirectUri,
     scope,
     state,
-  }: AuthorizationCodeRequestOptions) {
+  }: {
+    authorizationEndpoint: string;
+    clientId: string;
+    redirectUri: string;
+    scope?: OAuth2Scope.Set;
+    state?: string;
+    codeChallenge?: string;
+    codeChallengeMethod?: OAuth2PKCE.CodeChallengeMethod;
+    parameters?: Readonly<Record<string, string>>;
+  }) {
     return Effect.gen(function* () {
       const url = yield* OAuth2AuthorizationRequest.parseUrl(
         authorizationEndpoint,
@@ -104,8 +112,4 @@ export class OAuth2AuthorizationRequest {
       }
     });
   }
-}
-
-export namespace OAuth2AuthorizationRequest {
-  export type AuthorizationCodeOptions = AuthorizationCodeRequestOptions;
 }

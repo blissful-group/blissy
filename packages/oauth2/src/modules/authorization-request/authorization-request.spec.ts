@@ -220,8 +220,7 @@ it("rejects unsupported code challenge methods", async () => {
       authorizationEndpoint,
       clientId,
       codeChallenge: "challenge-123",
-      codeChallengeMethod:
-        "S512" as OAuth2AuthorizationRequest.AuthorizationCodeOptions["codeChallengeMethod"],
+      codeChallengeMethod: "S512" as "S256",
       redirectUri,
     }),
     {
