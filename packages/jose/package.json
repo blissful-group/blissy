@@ -1,6 +1,6 @@
 {
   "name": "@blissy-auth/jose",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "TypeScript implementation of the JOSE (Javascript Object Signing and Encryption) specifications with support for JWT, JWS, JWE, JWK, JWKS, and JWA, providing standards-compliant signing, verification, encryption, decryption, and key management.",
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
@@ -19,7 +19,7 @@
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "source": "./index.ts",
+      "source": "./src/index.ts",
       "import": {
         "types": "./dist/index.d.mts",
         "default": "./dist/index.mjs"
@@ -68,7 +68,7 @@
     "@blissy-auth/eslint-config": "workspace:^",
     "@blissy-auth/typescript-config": "workspace:^",
     "@vitest/coverage-v8": "^4.1.7",
-    "npm-run-all2": "9.0.0",
+    "npm-run-all2": "^9.0.0",
     "eslint": "*",
     "typescript": "*",
     "tsdown": "^0.22.0",

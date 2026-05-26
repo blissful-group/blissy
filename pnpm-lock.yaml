@@ -40,7 +40,7 @@ importers:
         specifier: '*'
         version: 9.39.4(jiti@2.6.1)
       npm-run-all2:
-        specifier: 9.0.0
+        specifier: ^9.0.0
         version: 9.0.0
       tsdown:
         specifier: ^0.22.0
