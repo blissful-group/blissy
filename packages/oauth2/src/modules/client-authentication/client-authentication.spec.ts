@@ -42,10 +42,11 @@ it("does not set an Authorization header for public clients", async () => {
 });
 
 it("rejects client_secret when authentication method is none if strict", async () => {
+  const clientSecret = "super-secret-value";
   const effect = Effect.match(
     OAuth2ClientAuthentication.none({
       clientId: "client-123",
-      clientSecret: "secret-123",
+      clientSecret,
       strict: true,
     }),
     {
@@ -59,6 +60,7 @@ it("rejects client_secret when authentication method is none if strict", async (
   expect(error).toBeInstanceOf(OAuth2ClientAuthentication.Error);
   expect(error?._tag).toBe("OAuth2ClientAuthenticationError");
   expect(error?.message).toBe("Invalid OAuth2 client authentication");
+  expect(JSON.stringify(error)).not.toContain(clientSecret);
 });
 
 it("sets an HTTP Basic Authorization header", async () => {
@@ -147,6 +149,24 @@ it("rejects empty client_secret for client_secret_basic", async () => {
   expect(error).toBeInstanceOf(OAuth2ClientAuthentication.Error);
   expect(error?._tag).toBe("OAuth2ClientAuthenticationError");
   expect(error?.message).toBe("Invalid OAuth2 client secret");
+});
+
+it("does not include client_secret in generated error messages", async () => {
+  const clientSecret = "super-secret-value";
+  const effect = Effect.match(
+    OAuth2ClientAuthentication.clientSecretBasic({
+      clientId: "",
+      clientSecret,
+    }),
+    {
+      onFailure: (error) => error,
+      onSuccess: () => null,
+    },
+  );
+
+  const error = await Effect.runPromise(effect);
+
+  expect(JSON.stringify(error)).not.toContain(clientSecret);
 });
 
 it("handles special characters in client_id", async () => {

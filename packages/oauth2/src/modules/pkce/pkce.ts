@@ -1,5 +1,6 @@
 import { Effect, Schema } from "effect";
 
+import { OAuth2Crypto } from "../../services/crypto/crypto";
 import {
   CodeChallengeMethodError,
   CodeChallengeVerificationError,
@@ -10,7 +11,10 @@ import {
   CodeVerifierCharactersSchema,
   CodeVerifierLengthSchema,
 } from "./pkce.schema";
-import type { OAuth2PKCECodeChallengeMethod } from "./pkce.types";
+import type {
+  OAuth2PKCECodeChallengeMethod,
+  OAuth2PKCECodeVerifierGenerationOptions,
+} from "./pkce.types";
 
 /**
  * Validates PKCE code verifiers and derives PKCE code challenges.
@@ -32,6 +36,24 @@ export class OAuth2PKCE {
   static CodeVerifierValidationError = CodeVerifierValidationError;
 
   private static encoder = new TextEncoder();
+
+  /**
+   * Generates a cryptographically random PKCE code verifier.
+   */
+  static generateCodeVerifier({
+    byteLength = 32,
+  }: OAuth2PKCECodeVerifierGenerationOptions = {}) {
+    return Effect.gen(function* () {
+      const crypto = yield* OAuth2Crypto;
+      const bytes = new Uint8Array(byteLength);
+      crypto.randomValues(bytes);
+      const codeVerifier = OAuth2PKCE.encodeBase64Url(bytes);
+
+      yield* OAuth2PKCE.validateCodeVerifier(codeVerifier);
+
+      return codeVerifier;
+    });
+  }
 
   /**
    * Validates a PKCE code verifier according to RFC 7636 length and character rules.
@@ -82,14 +104,12 @@ export class OAuth2PKCE {
         return codeVerifier;
       }
 
-      const digest = yield* Effect.tryPromise(() =>
-        globalThis.crypto.subtle.digest(
-          "SHA-256",
-          OAuth2PKCE.encoder.encode(codeVerifier),
-        ),
+      const crypto = yield* OAuth2Crypto;
+      const hash = yield* Effect.tryPromise(() =>
+        crypto.digest("SHA-256", OAuth2PKCE.encoder.encode(codeVerifier)),
       );
 
-      return OAuth2PKCE.encodeBase64Url(new Uint8Array(digest));
+      return OAuth2PKCE.encodeBase64Url(new Uint8Array(hash));
     });
   }
 
@@ -138,4 +158,6 @@ export class OAuth2PKCE {
 
 export namespace OAuth2PKCE {
   export type CodeChallengeMethod = OAuth2PKCECodeChallengeMethod;
+  export type CodeVerifierGenerationOptions =
+    OAuth2PKCECodeVerifierGenerationOptions;
 }

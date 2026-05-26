@@ -1,5 +1,6 @@
 import { Effect, Schema } from "effect";
 
+import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { compare } from "../../utils/compare";
 import { STATE_DEFAULT_BYTE_LENGTH } from "./state.constants";
 import {
@@ -28,6 +29,8 @@ export class OAuth2State {
    */
   static generate(byteLength = STATE_DEFAULT_BYTE_LENGTH) {
     return Effect.gen(function* () {
+      const crypto = yield* OAuth2Crypto;
+
       yield* Effect.mapError(
         Schema.decodeUnknown(StateByteLengthSchema)(byteLength),
         () =>
@@ -38,7 +41,7 @@ export class OAuth2State {
       );
 
       const bytes = new Uint8Array(byteLength);
-      globalThis.crypto.getRandomValues(bytes);
+      crypto.randomValues(bytes);
 
       return OAuth2State.encodeBase64Url(bytes);
     });

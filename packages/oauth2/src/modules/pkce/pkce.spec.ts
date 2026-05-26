@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
+import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { OAuth2PKCE } from "./pkce";
 
 const minimumLengthCodeVerifier = "a".repeat(43);
@@ -22,6 +23,53 @@ it("accepts a code verifier of exactly 128 characters", async () => {
       OAuth2PKCE.validateCodeVerifier(maximumLengthCodeVerifier),
     ),
   ).resolves.toBeUndefined();
+});
+
+it("generates a non-empty code verifier", async () => {
+  const codeVerifier = await Effect.runPromise(
+    OAuth2PKCE.generateCodeVerifier(),
+  );
+
+  expect(codeVerifier).not.toBe("");
+});
+
+it("generates URL-safe code verifier values", async () => {
+  const codeVerifier = await Effect.runPromise(
+    OAuth2PKCE.generateCodeVerifier(),
+  );
+
+  expect(codeVerifier).toMatch(/^[A-Za-z0-9._~-]+$/u);
+});
+
+it("generates code verifiers with the default valid length", async () => {
+  const codeVerifier = await Effect.runPromise(
+    OAuth2PKCE.generateCodeVerifier(),
+  );
+
+  expect(codeVerifier).toHaveLength(43);
+});
+
+it("supports configurable code verifier length", async () => {
+  const codeVerifier = await Effect.runPromise(
+    OAuth2PKCE.generateCodeVerifier({ byteLength: 96 }),
+  );
+
+  expect(codeVerifier).toHaveLength(128);
+});
+
+it("supports dependency injection for randomness", async () => {
+  const service = Effect.provideService(OAuth2Crypto, {
+    digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
+    randomValues(bytes) {
+      bytes.fill(0);
+
+      return bytes;
+    },
+  });
+  const effect = OAuth2PKCE.generateCodeVerifier().pipe(service);
+  const codeVerifier = await Effect.runPromise(effect);
+
+  expect(codeVerifier).toBe("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 });
 
 it("rejects code verifier lengths below 43 characters", async () => {
@@ -115,6 +163,37 @@ it("creates an S256 challenge using SHA-256", async () => {
   );
 
   expect(codeChallenge).toBe(rfc7636S256CodeChallenge);
+});
+
+it("supports dependency injection for crypto", async () => {
+  const digestInput: Array<{
+    algorithm: AlgorithmIdentifier;
+    data: string;
+  }> = [];
+  const service = Effect.provideService(OAuth2Crypto, {
+    digest: (algorithm, data) => {
+      digestInput.push({
+        algorithm,
+        data: new TextDecoder().decode(data),
+      });
+
+      return Promise.resolve(new Uint8Array(32).buffer);
+    },
+    randomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto),
+  });
+  const effect = OAuth2PKCE.createCodeChallenge({
+    codeVerifier: minimumLengthCodeVerifier,
+    method: "S256",
+  }).pipe(service);
+  const codeChallenge = await Effect.runPromise(effect);
+
+  expect(digestInput).toEqual([
+    {
+      algorithm: "SHA-256",
+      data: minimumLengthCodeVerifier,
+    },
+  ]);
+  expect(codeChallenge).toBe("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 });
 
 it("encodes S256 challenge using base64url without padding", async () => {

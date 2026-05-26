@@ -6,3 +6,4 @@ export * from "./modules/scope/scope";
 export * from "./modules/state/state";
 export * from "./modules/token-request/token-request";
 export * from "./modules/token-response/token-response";
+export * from "./services/crypto/crypto";

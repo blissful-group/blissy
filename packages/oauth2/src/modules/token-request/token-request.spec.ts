@@ -276,3 +276,29 @@ it("rejects extension parameters that collide with reserved token request parame
   expect(error?.message).toBe("Invalid token request parameter");
   expect(error).toMatchObject({ parameter: "grant_type" });
 });
+
+it("does not include authorization headers in public error messages", async () => {
+  const authorization = "Basic super-secret-header";
+  const effect = Effect.match(
+    OAuth2TokenRequest.clientCredentials({
+      authentication: {
+        bodyParameters: {},
+        headers: {
+          Authorization: authorization,
+        },
+      },
+      parameters: {
+        grant_type: "password",
+      },
+      tokenEndpoint,
+    }),
+    {
+      onFailure: (error) => error,
+      onSuccess: () => null,
+    },
+  );
+
+  const error = await Effect.runPromise(effect);
+
+  expect(JSON.stringify(error)).not.toContain(authorization);
+});

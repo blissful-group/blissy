@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
+import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { OAuth2State } from "./state";
 
 it("generates a non-empty state value", async () => {
@@ -27,6 +28,21 @@ it("supports configurable state byte length", async () => {
   const state = await Effect.runPromise(OAuth2State.generate(16));
 
   expect(state).toHaveLength(22);
+});
+
+it("supports dependency injection for randomness", async () => {
+  const service = Effect.provideService(OAuth2Crypto, {
+    digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
+    randomValues: (bytes) => {
+      bytes.set([0xff, 0xee, 0xdd, 0xcc]);
+
+      return bytes;
+    },
+  });
+  const effect = OAuth2State.generate(4).pipe(service);
+  const state = await Effect.runPromise(effect);
+
+  expect(state).toBe("_-7dzA");
 });
 
 it("rejects state generation with zero length", async () => {
