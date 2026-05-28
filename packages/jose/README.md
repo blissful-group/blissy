@@ -3,7 +3,6 @@
 # <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/jose](https://github.com/blissful-group/blissy/blob/main/packages/jose/README.md)
 
 ![NPM License](https://img.shields.io/npm/l/@blissy-auth/jose)
-![npm package minimized gzipped size (scoped)](https://img.shields.io/bundlejs/size/@blissy-auth/jose)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/@blissy-auth/jose)
 
 Minimal JOSE primitives for TypeScript built on top of Web Crypto and `effect`.

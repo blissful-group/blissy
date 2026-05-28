@@ -3,7 +3,6 @@
 # <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/oauth2](https://github.com/blissful-group/blissy/blob/main/packages/oauth2/README.md)
 
 ![NPM License](https://img.shields.io/npm/l/@blissy-auth/oauth2)
-![npm package minimized gzipped size (scoped)](https://img.shields.io/bundlejs/size/@blissy-auth/oauth2)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/@blissy-auth/oauth2)
 
 Minimal OAuth 2.0 protocol primitives for TypeScript built on top of platform APIs and `effect`.
