@@ -1,5 +1,18 @@
 # @blissy-auth/jose
 
+## 0.1.0
+
+### Minor Changes
+
+- 64bcb0e: Add RS256 and ES256 JWT verification support with JWK Set key resolution.
+
+### Patch Changes
+
+- 7a1ebd9: Use shared injectable crypto and algorithm services for Web Crypto operations.
+- Updated dependencies [7a1ebd9]
+- Updated dependencies [efc8768]
+  - @blissy-auth/crypto@0.0.1
+
 ## 0.0.6
 
 ### Patch Changes
