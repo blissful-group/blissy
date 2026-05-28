@@ -18,7 +18,6 @@ This package currently provides:
 - `OAuth2State` for state generation and validation
 - `OAuth2TokenRequest` for token endpoint request construction
 - `OAuth2TokenResponse` for token success and token error response parsing
-- `OAuth2Crypto` for Effect-based injection of randomness and hashing
 
 Every public operation returns an `Effect`, so callers can decide whether to run it with `Effect.runPromise`, compose it, or handle failures functionally.
 
@@ -125,12 +124,6 @@ This package intentionally implements focused OAuth 2.0 primitives today.
 - Token error responses
 - `error_description`
 - `error_uri`
-
-### Effect Services
-
-- `OAuth2Crypto` for randomness and hashing
-- Defaults use platform Web Crypto
-- Tests and callers can override the service with `Effect.provideService`
 
 ## Not Implemented Yet
 
@@ -426,38 +419,12 @@ Available attached types and errors:
 - `OAuth2TokenResponse.Error`
 - `OAuth2TokenResponse.ValidationError`
 
-## Effect Dependency Injection
-
-`OAuth2Crypto` is an Effect service with default implementations backed by Web Crypto. You can override it with `Effect.provideService` for deterministic tests or custom runtime integrations.
-
-```ts
-import { Effect } from "effect";
-import { OAuth2Crypto, OAuth2State } from "@blissy-auth/oauth2";
-
-const state = await Effect.runPromise(
-  OAuth2State.generate(4).pipe(
-    Effect.provideService(OAuth2Crypto, {
-      digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
-      randomValues: (bytes) => {
-        bytes.set([0xff, 0xee, 0xdd, 0xcc]);
-
-        return bytes;
-      },
-    }),
-  ),
-);
-```
-
-Available attached types:
-
-- `OAuth2Crypto.Service`
-
 ## Security Notes
 
 - Do not log client secrets, token values, authorization headers, or full request objects containing credentials.
 - Validation errors avoid embedding client secrets and authorization headers.
 - Request builders do not perform network IO, which keeps credential transport under caller control.
-- PKCE and state generation use Web Crypto by default through `OAuth2Crypto`.
+- PKCE and state generation use Web Crypto by default.
 
 ## Development
 

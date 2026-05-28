@@ -1,6 +1,6 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect, Schema } from "effect";
 
-import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { compare } from "../../utils/compare";
 import { STATE_DEFAULT_BYTE_LENGTH } from "./state.constants";
 import {
@@ -29,7 +29,7 @@ export class OAuth2State {
    */
   static generate(byteLength = STATE_DEFAULT_BYTE_LENGTH) {
     return Effect.gen(function* () {
-      const crypto = yield* OAuth2Crypto;
+      const crypto = yield* CryptoReference;
 
       yield* Effect.mapError(
         Schema.decodeUnknown(StateByteLengthSchema)(byteLength),

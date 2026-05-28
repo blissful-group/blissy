@@ -1,4 +1,4 @@
-export type OAuth2CryptoService = {
+export type CryptoService = {
   randomValues: (bytes: Uint8Array<ArrayBuffer>) => Uint8Array<ArrayBuffer>;
   digest: (
     algorithm: AlgorithmIdentifier,

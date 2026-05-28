@@ -1,6 +1,6 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect, Schema } from "effect";
 
-import { OAuth2Crypto } from "../../services/crypto/crypto";
 import {
   CodeChallengeMethodError,
   CodeChallengeVerificationError,
@@ -44,7 +44,7 @@ export class OAuth2PKCE {
     byteLength = 32,
   }: OAuth2PKCECodeVerifierGenerationOptions = {}) {
     return Effect.gen(function* () {
-      const crypto = yield* OAuth2Crypto;
+      const crypto = yield* CryptoReference;
       const bytes = new Uint8Array(byteLength);
       crypto.randomValues(bytes);
       const codeVerifier = OAuth2PKCE.encodeBase64Url(bytes);
@@ -104,7 +104,7 @@ export class OAuth2PKCE {
         return codeVerifier;
       }
 
-      const crypto = yield* OAuth2Crypto;
+      const crypto = yield* CryptoReference;
       const hash = yield* Effect.tryPromise(() =>
         crypto.digest("SHA-256", OAuth2PKCE.encoder.encode(codeVerifier)),
       );

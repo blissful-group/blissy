@@ -10,3 +10,4 @@
 
 - This repo uses changesets cli
 - Create a changeset entry to cover affected projects
+- Private projects are just not published, but can be affected

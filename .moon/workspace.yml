@@ -4,6 +4,7 @@ $schema: "./cache/schemas/workspace.json"
 projects:
   globs:
     - "packages/*"
+    - "services/*"
     - "tooling/*"
   sources:
     blissy: .

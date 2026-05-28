@@ -1,0 +1,12 @@
+language: typescript
+layer: library
+
+tasks:
+  format:
+    command: pnpm format
+
+  lint:
+    command: pnpm lint
+
+  test:
+    command: pnpm test

@@ -1,7 +1,7 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
-import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { OAuth2PKCE } from "./pkce";
 
 const minimumLengthCodeVerifier = "a".repeat(43);
@@ -58,7 +58,7 @@ it("supports configurable code verifier length", async () => {
 });
 
 it("supports dependency injection for randomness", async () => {
-  const service = Effect.provideService(OAuth2Crypto, {
+  const service = Effect.provideService(CryptoReference, {
     digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
     randomValues(bytes) {
       bytes.fill(0);
@@ -170,7 +170,7 @@ it("supports dependency injection for crypto", async () => {
     algorithm: AlgorithmIdentifier;
     data: string;
   }> = [];
-  const service = Effect.provideService(OAuth2Crypto, {
+  const service = Effect.provideService(CryptoReference, {
     digest: (algorithm, data) => {
       digestInput.push({
         algorithm,
