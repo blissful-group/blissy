@@ -62,6 +62,8 @@
   },
   "dependencies": {
     "@blissy-auth/crypto": "workspace:^",
+    "@blissy-auth/jose": "workspace:^",
+    "@blissy-auth/oauth2": "workspace:^",
     "effect": "^3.21.2"
   },
   "devDependencies": {

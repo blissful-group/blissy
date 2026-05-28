@@ -94,6 +94,12 @@ importers:
       '@blissy-auth/crypto':
         specifier: workspace:^
         version: link:../../services/crypto
+      '@blissy-auth/jose':
+        specifier: workspace:^
+        version: link:../jose
+      '@blissy-auth/oauth2':
+        specifier: workspace:^
+        version: link:../oauth2
       effect:
         specifier: ^3.21.2
         version: 3.21.2
