@@ -49,6 +49,8 @@ npm install @blissy-auth/oauth2 effect
 
 Node.js versions with Web Crypto support work out of the box.
 
+OAuth2 uses the workspace crypto service internally for PKCE and state generation. See [`@blissy-auth/crypto`](../../services/crypto/README.md) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
+
 ## Current Support
 
 This package intentionally implements focused OAuth 2.0 primitives today.
