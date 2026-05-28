@@ -1,4 +1,7 @@
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import {
+  AlgorithmReference,
+  CryptoReference,
+} from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 
 import {
@@ -28,11 +31,12 @@ export class JWA {
   }) {
     return Effect.gen(function* () {
       yield* JWA.validateAlgorithm(alg);
-      yield* JWA.validateKeyCompatibility({ alg, key });
+      const algorithms = yield* AlgorithmReference;
+      yield* JWA.validateKeyCompatibility({ alg, algorithms, key });
       const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWA.importKey({ key, usage: "sign" });
       const promise = crypto.sign(
-        JWA.getSigningAlgorithm(alg),
+        JWA.getSigningAlgorithm(alg, algorithms),
         cryptoKey,
         new Uint8Array(payload),
       );
@@ -59,11 +63,12 @@ export class JWA {
   }) {
     return Effect.gen(function* () {
       yield* JWA.validateAlgorithm(alg);
-      yield* JWA.validateKeyCompatibility({ alg, key });
+      const algorithms = yield* AlgorithmReference;
+      yield* JWA.validateKeyCompatibility({ alg, algorithms, key });
       const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWA.importKey({ key, usage: "verify" });
       const promise = crypto.verify(
-        JWA.getSigningAlgorithm(alg),
+        JWA.getSigningAlgorithm(alg, algorithms),
         cryptoKey,
         new Uint8Array(signature),
         new Uint8Array(payload),
@@ -77,11 +82,12 @@ export class JWA {
     return Effect.gen(function* () {
       if (!(key instanceof Uint8Array)) return key;
 
+      const algorithms = yield* AlgorithmReference;
       const crypto = yield* CryptoReference;
       const promise = crypto.importKey(
         "raw",
         new Uint8Array(key),
-        { hash: "SHA-256", name: "HMAC" },
+        algorithms.jwa[AlgorithmReference.HS256].importKey,
         false,
         [usage],
       );
@@ -90,14 +96,17 @@ export class JWA {
     });
   }
 
-  private static getSigningAlgorithm(alg: JWAAlgorithm) {
+  private static getSigningAlgorithm(
+    alg: JWAAlgorithm,
+    algorithms: AlgorithmReference.Service,
+  ) {
     switch (alg) {
       case "HS256":
-        return "HMAC";
+        return algorithms.jwa[AlgorithmReference.HS256].sign;
       case "RS256":
-        return "RSASSA-PKCS1-v1_5";
+        return algorithms.jwa[AlgorithmReference.RS256].sign;
       case "ES256":
-        return { hash: "SHA-256", name: "ECDSA" } as const;
+        return algorithms.jwa[AlgorithmReference.ES256].sign;
     }
   }
 
@@ -115,17 +124,23 @@ export class JWA {
 
   private static validateKeyCompatibility({
     alg,
+    algorithms,
     key,
   }: {
     alg: JWAAlgorithm;
+    algorithms: AlgorithmReference.Service;
     key: JWAKey;
   }) {
     return Effect.gen(function* () {
       const isHmacKey = key instanceof Uint8Array;
       const isRsaKey =
-        key instanceof CryptoKey && key.algorithm.name === "RSASSA-PKCS1-v1_5";
+        key instanceof CryptoKey &&
+        key.algorithm.name ===
+          algorithms.jwa[AlgorithmReference.RS256].importKey.name;
       const isEcKey =
-        key instanceof CryptoKey && key.algorithm.name === "ECDSA";
+        key instanceof CryptoKey &&
+        key.algorithm.name ===
+          algorithms.jwa[AlgorithmReference.ES256].importKey.name;
 
       if (alg === "HS256" && isHmacKey) return;
       if (alg === "RS256" && isRsaKey) return;

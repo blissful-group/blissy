@@ -1,4 +1,7 @@
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import {
+  AlgorithmReference,
+  CryptoReference,
+} from "@blissy-auth/crypto/source";
 import { Effect, Schema } from "effect";
 
 import { Filters } from "../../utils/filters";
@@ -62,9 +65,10 @@ export class JWK {
    */
   static importVerificationKey(key: JWKKey) {
     return Effect.gen(function* () {
-      const alg = JWK.getAlgorithm(key);
+      const algorithms = yield* AlgorithmReference;
+      const algorithm = JWK.getAlgorithm(key, algorithms);
 
-      if (alg === undefined) {
+      if (algorithm === undefined) {
         return yield* Effect.fail(
           new JWKKeyImportError({ message: "Invalid JWK key" }),
         );
@@ -75,18 +79,23 @@ export class JWK {
       return yield* Effect.tryPromise({
         catch: () => new JWKKeyImportError({ message: "Invalid JWK key" }),
         try: () =>
-          crypto.importKey("jwk", key as JsonWebKey, alg, false, ["verify"]),
+          crypto.importKey("jwk", key as JsonWebKey, algorithm, false, [
+            "verify",
+          ]),
       });
     });
   }
 
-  private static getAlgorithm(key: JWKKey) {
+  private static getAlgorithm(
+    key: JWKKey,
+    algorithms: AlgorithmReference.Service,
+  ) {
     if (key.kty === "RSA") {
-      return { hash: "SHA-256", name: "RSASSA-PKCS1-v1_5" } as const;
+      return algorithms.jwa[AlgorithmReference.RS256].importKey;
     }
 
     if (key.kty === "EC" && key.crv === "P-256") {
-      return { name: "ECDSA", namedCurve: "P-256" } as const;
+      return algorithms.jwa[AlgorithmReference.ES256].importKey;
     }
   }
 }

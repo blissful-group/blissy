@@ -1,4 +1,7 @@
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import {
+  AlgorithmReference,
+  CryptoReference,
+} from "@blissy-auth/crypto/source";
 import { Effect, Schema } from "effect";
 
 import {
@@ -104,9 +107,13 @@ export class OAuth2PKCE {
         return codeVerifier;
       }
 
+      const algorithm = yield* AlgorithmReference;
       const crypto = yield* CryptoReference;
       const hash = yield* Effect.tryPromise(() =>
-        crypto.digest("SHA-256", OAuth2PKCE.encoder.encode(codeVerifier)),
+        crypto.digest(
+          algorithm.digest[AlgorithmReference.SHA256],
+          OAuth2PKCE.encoder.encode(codeVerifier),
+        ),
       );
 
       return OAuth2PKCE.encodeBase64Url(new Uint8Array(hash));

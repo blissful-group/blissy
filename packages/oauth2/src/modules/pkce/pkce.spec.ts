@@ -1,4 +1,7 @@
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import {
+  AlgorithmReference,
+  CryptoReference,
+} from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
@@ -195,6 +198,34 @@ it("supports dependency injection for crypto", async () => {
     },
   ]);
   expect(codeChallenge).toBe("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+});
+
+it("supports dependency injection for algorithms", async () => {
+  const digestInput: AlgorithmIdentifier[] = [];
+  const cryptoServiceWithDigest = {
+    ...cryptoService,
+    digest: (algorithm: AlgorithmIdentifier) => {
+      digestInput.push(algorithm);
+
+      return Promise.resolve(new Uint8Array(32).buffer);
+    },
+  };
+  const algorithmService = Effect.provideService(AlgorithmReference, {
+    ...AlgorithmReference.defaultValue(),
+    digest: { [AlgorithmReference.SHA256]: "SHA-512" },
+  });
+  const cryptoServiceProvider = Effect.provideService(
+    CryptoReference,
+    cryptoServiceWithDigest,
+  );
+  const effect = OAuth2PKCE.createCodeChallenge({
+    codeVerifier: minimumLengthCodeVerifier,
+    method: "S256",
+  }).pipe(algorithmService, cryptoServiceProvider);
+
+  await Effect.runPromise(effect);
+
+  expect(digestInput).toEqual(["SHA-512"]);
 });
 
 it("encodes S256 challenge using base64url without padding", async () => {

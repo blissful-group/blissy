@@ -5,7 +5,7 @@ Shared private Effect crypto service for Blissy workspace packages.
 This package is not published. Source-code packages should import it through the source export:
 
 ```ts
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import { AlgorithmReference, CryptoReference } from "@blissy-auth/crypto/source";
 ```
 
 ## Default Service
@@ -19,6 +19,8 @@ import { CryptoReference } from "@blissy-auth/crypto/source";
 - `globalThis.crypto.subtle.verify`
 - `globalThis.crypto.subtle.encrypt`
 - `globalThis.crypto.subtle.decrypt`
+
+`AlgorithmReference` provides the Web Crypto algorithm descriptors used by workspace packages. This keeps algorithm selection injectable instead of hardcoded inside package operations.
 
 ## Override The Service
 
@@ -39,6 +41,26 @@ const deterministicCrypto = {
 
 const program = someEffectUsingCrypto.pipe(
   Effect.provideService(CryptoReference, deterministicCrypto),
+);
+```
+
+## Override Algorithms
+
+Use `AlgorithmReference` to override algorithm descriptors separately from the crypto implementation.
+
+```ts
+import { AlgorithmReference } from "@blissy-auth/crypto/source";
+import { Effect } from "effect";
+
+const customAlgorithms = {
+  ...AlgorithmReference.defaultValue(),
+  digest: {
+    sha256: "SHA-512",
+  },
+} satisfies AlgorithmReference.Service;
+
+const program = someEffectUsingAlgorithms.pipe(
+  Effect.provideService(AlgorithmReference, customAlgorithms),
 );
 ```
 
