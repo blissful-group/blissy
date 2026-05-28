@@ -1,8 +1,10 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
-import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { OAuth2State } from "./state";
+
+const cryptoService = CryptoReference.defaultValue();
 
 it("generates a non-empty state value", async () => {
   const state = await Effect.runPromise(OAuth2State.generate());
@@ -31,8 +33,8 @@ it("supports configurable state byte length", async () => {
 });
 
 it("supports dependency injection for randomness", async () => {
-  const service = Effect.provideService(OAuth2Crypto, {
-    digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
+  const service = Effect.provideService(CryptoReference, {
+    ...cryptoService,
     randomValues: (bytes) => {
       bytes.set([0xff, 0xee, 0xdd, 0xcc]);
 

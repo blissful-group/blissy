@@ -1,0 +1,36 @@
+{
+  "name": "@blissy-auth/crypto",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared Effect crypto service for Blissy auth packages.",
+  "license": "MIT",
+  "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
+  "homepage": "https://github.com/blissful-group/blissy#readme",
+  "type": "module",
+  "exports": {
+    "./source": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "format": "eslint . --fix",
+    "lint": "npm-run-all --parallel lint:eslint lint:tsc --parallel lint:dependencies",
+    "lint:dependencies": "pnpx depcheck",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@blissy-auth/eslint-config": "workspace:^",
+    "@blissy-auth/typescript-config": "workspace:^",
+    "@vitest/coverage-v8": "^4.1.7",
+    "npm-run-all2": "^9.0.0",
+    "eslint": "*",
+    "typescript": "*",
+    "vitest": "^4.1.7"
+  }
+}

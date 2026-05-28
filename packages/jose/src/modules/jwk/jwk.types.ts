@@ -5,6 +5,7 @@ export type JWKKey = Record<string, unknown> & {
   kid?: string;
   alg?: string;
   use?: string;
+  key_ops?: string[];
 };
 
 export type JWKSet = {

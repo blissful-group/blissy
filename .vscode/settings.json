@@ -19,6 +19,7 @@
   "eslint.format.enable": true,
   "conventionalCommits.scopes": [
     "jose",
-    "oauth2"
+    "oauth2",
+    "crypto"
   ]
 }

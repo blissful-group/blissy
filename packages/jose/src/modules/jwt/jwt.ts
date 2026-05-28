@@ -1,6 +1,9 @@
 import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
+import type { JWAKey } from "../jwa/jwa.types";
+import { JWK } from "../jwk/jwk";
+import type { JWKSet } from "../jwk/jwk.types";
 import { JWS } from "../jws/jws";
 import {
   JWTClaimValidationError,
@@ -26,14 +29,22 @@ export class JWT {
   private static decoder = new TextDecoder();
 
   /**
-   * Signs a JWT using HS256.
+   * Signs a JWT.
    */
-  static sign({ claims, key }: { claims: JWTClaims; key: Uint8Array }) {
+  static sign({
+    alg = "HS256",
+    claims,
+    key,
+  }: {
+    claims: JWTClaims;
+    key: JWAKey;
+    alg?: Exclude<JWTAlgorithm, "none">;
+  }) {
     return JWS.signCompact({
       key,
       payload: JWT.encoder.encode(JSON.stringify(claims)),
       protectedHeader: {
-        alg: "HS256",
+        alg,
         typ: "JWT",
       },
     });
@@ -47,13 +58,15 @@ export class JWT {
     audience,
     clockTolerance = 0,
     issuer,
+    jwks,
     key,
     now = Math.floor(Date.now() / 1000),
     subject,
     token,
   }: {
     token: string;
-    key?: Uint8Array;
+    key?: JWAKey;
+    jwks?: JWKSet;
     issuer?: string;
     subject?: string;
     audience?: string;
@@ -73,7 +86,13 @@ export class JWT {
           return yield* Effect.fail(error);
         }
       } else {
-        if (key === undefined) {
+        const verificationKey = yield* JWT.resolveVerificationKey({
+          header: decoded.header,
+          jwks,
+          key,
+        });
+
+        if (verificationKey === undefined) {
           const error = new JWTVerificationError({
             message: "Invalid JWT signature",
           });
@@ -82,7 +101,7 @@ export class JWT {
         }
 
         const verified = yield* Effect.match(
-          JWS.verifyCompact({ key, token }),
+          JWS.verifyCompact({ key: verificationKey, token }),
           {
             onFailure: () => false,
             onSuccess: () => true,
@@ -211,6 +230,32 @@ export class JWT {
 
         return yield* Effect.fail(error);
       }
+    });
+  }
+
+  private static resolveVerificationKey({
+    header,
+    jwks,
+    key,
+  }: {
+    header: JWTHeader;
+    key?: JWAKey;
+    jwks?: JWKSet;
+  }) {
+    return Effect.gen(function* () {
+      if (key !== undefined) return key;
+      if (jwks === undefined) return undefined;
+
+      const jwk = yield* JWK.findKey({
+        alg: header.alg,
+        kid: typeof header.kid === "string" ? header.kid : undefined,
+        set: jwks,
+        use: "sig",
+      });
+
+      if (jwk === undefined) return undefined;
+
+      return yield* JWK.importVerificationKey(jwk);
     });
   }
 }

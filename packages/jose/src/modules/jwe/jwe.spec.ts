@@ -1,3 +1,4 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
@@ -7,6 +8,7 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const key = encoder.encode("0123456789abcdef0123456789abcdef");
 const payload = encoder.encode("hello world");
+const cryptoService = CryptoReference.defaultValue();
 
 it("creates compact JWE serialization", async () => {
   const token = await Effect.runPromise(
@@ -28,6 +30,29 @@ it("creates compact JWE serialization", async () => {
   expect(segments[2]).toMatch(/^[A-Za-z0-9_-]+$/);
   expect(segments[3]).toMatch(/^[A-Za-z0-9_-]+$/);
   expect(segments[4]).toMatch(/^[A-Za-z0-9_-]+$/);
+});
+
+it("supports dependency injection for initialization vectors", async () => {
+  const service = Effect.provideService(CryptoReference, {
+    ...cryptoService,
+    randomValues(bytes) {
+      bytes.fill(0);
+
+      return bytes;
+    },
+  });
+  const token = await Effect.runPromise(
+    JWE.encryptCompact({
+      key,
+      payload,
+      protectedHeader: {
+        alg: "dir",
+        enc: "A256GCM",
+      },
+    }).pipe(service),
+  );
+
+  expect(token.split(".")[2]).toBe("AAAAAAAAAAAAAAAA");
 });
 
 it("decrypts compact JWE serialization", async () => {

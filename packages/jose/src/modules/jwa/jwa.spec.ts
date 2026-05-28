@@ -1,3 +1,4 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
@@ -5,6 +6,7 @@ import { JWA } from "./jwa";
 
 const encoder = new TextEncoder();
 const payload = encoder.encode("hello world");
+const cryptoService = CryptoReference.defaultValue();
 
 it("signs and verifies with HS256", async () => {
   const key = encoder.encode("super-secret-signing-key");
@@ -61,6 +63,33 @@ it("signs and verifies with RS256", async () => {
   expect(signature).toBeInstanceOf(Uint8Array);
   expect(signature.length).toBeGreaterThan(0);
   expect(valid).toBe(true);
+});
+
+it("supports dependency injection for signing", async () => {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const service = Effect.provideService(CryptoReference, {
+    ...cryptoService,
+    sign: () => Promise.resolve(new Uint8Array([1, 2, 3]).buffer),
+  });
+
+  const signature = await Effect.runPromise(
+    JWA.sign({
+      alg: "RS256",
+      key: keyPair.privateKey,
+      payload,
+    }).pipe(service),
+  );
+
+  expect(signature).toEqual(new Uint8Array([1, 2, 3]));
 });
 
 it("signs and verifies with ES256", async () => {

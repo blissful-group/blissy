@@ -43,6 +43,8 @@ pnpm add @blissy/jose effect
 
 Node.js versions with Web Crypto support work out of the box.
 
+JOSE uses the workspace crypto service internally for signing, verification, encryption, decryption, key import, and randomness. See [`@blissy-auth/crypto`](../../services/crypto/README.md) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
+
 ## Current Support
 
 This package intentionally implements a small supported subset today.

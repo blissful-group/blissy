@@ -1,4 +1,6 @@
-export type JWTAlgorithm = "HS256" | "none";
+import type { JWAAlgorithm } from "../jwa/jwa.types";
+
+export type JWTAlgorithm = JWAAlgorithm | "none";
 
 export type JWTHeaderValue = string | number | boolean | null | string[];
 

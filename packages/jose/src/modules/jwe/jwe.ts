@@ -1,3 +1,7 @@
+import {
+  AlgorithmReference,
+  CryptoReference,
+} from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
@@ -194,19 +198,19 @@ export class JWE {
   }) {
     return Effect.gen(function* () {
       yield* JWE.validateProtectedHeader(protectedHeader);
+      const algorithm = yield* AlgorithmReference;
+      const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWE.importKey(key);
-      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const iv = crypto.randomValues(new Uint8Array(12));
       const protectedSegment = yield* Base64.encode(
         JWE.encoder.encode(JSON.stringify(protectedHeader)),
       );
       const additionalData = JWE.encoder.encode(protectedSegment);
-      const promise = crypto.subtle.encrypt(
-        {
+      const promise = crypto.encrypt(
+        algorithm.jwe[AlgorithmReference.A256GCM].params({
           additionalData,
           iv,
-          name: "AES-GCM",
-          tagLength: 128,
-        },
+        }),
         cryptoKey,
         new Uint8Array(payload),
       );
@@ -254,6 +258,8 @@ export class JWE {
         );
       }
 
+      const algorithm = yield* AlgorithmReference;
+      const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWE.importKey(key);
       const iv = yield* Base64.decode(ivSegment);
       const ciphertext = yield* Base64.decode(ciphertextSegment);
@@ -264,13 +270,11 @@ export class JWE {
       encrypted.set(ciphertext);
       encrypted.set(tag, ciphertext.length);
 
-      const promise = crypto.subtle.decrypt(
-        {
+      const promise = crypto.decrypt(
+        algorithm.jwe[AlgorithmReference.A256GCM].params({
           additionalData,
           iv: new Uint8Array(iv),
-          name: "AES-GCM",
-          tagLength: 128,
-        },
+        }),
         cryptoKey,
         encrypted,
       );
@@ -286,15 +290,19 @@ export class JWE {
   }
 
   private static importKey(key: Uint8Array) {
-    const promise = crypto.subtle.importKey(
-      "raw",
-      new Uint8Array(key),
-      { length: 256, name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"],
-    );
+    return Effect.gen(function* () {
+      const algorithm = yield* AlgorithmReference;
+      const crypto = yield* CryptoReference;
+      const promise = crypto.importKey(
+        "raw",
+        new Uint8Array(key),
+        algorithm.jwe[AlgorithmReference.A256GCM].importKey,
+        false,
+        ["encrypt", "decrypt"],
+      );
 
-    return Effect.promise(() => promise);
+      return yield* Effect.promise(() => promise);
+    });
   }
 
   private static validateProtectedHeader(protectedHeader: {

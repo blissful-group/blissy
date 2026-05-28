@@ -1,0 +1,10 @@
+{
+  "extends": "@blissy-auth/typescript-config/tsconfig.base",
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  }
+}

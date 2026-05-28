@@ -1,13 +1,17 @@
+import {
+  AlgorithmReference,
+  CryptoReference,
+} from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 
-import { OAuth2Crypto } from "../../services/crypto/crypto";
 import { OAuth2PKCE } from "./pkce";
 
 const minimumLengthCodeVerifier = "a".repeat(43);
 const maximumLengthCodeVerifier = "a".repeat(128);
 const rfc7636CodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 const rfc7636S256CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+const cryptoService = CryptoReference.defaultValue();
 
 it("accepts a code verifier of exactly 43 characters", async () => {
   await expect(
@@ -58,8 +62,8 @@ it("supports configurable code verifier length", async () => {
 });
 
 it("supports dependency injection for randomness", async () => {
-  const service = Effect.provideService(OAuth2Crypto, {
-    digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
+  const service = Effect.provideService(CryptoReference, {
+    ...cryptoService,
     randomValues(bytes) {
       bytes.fill(0);
 
@@ -170,7 +174,8 @@ it("supports dependency injection for crypto", async () => {
     algorithm: AlgorithmIdentifier;
     data: string;
   }> = [];
-  const service = Effect.provideService(OAuth2Crypto, {
+  const service = Effect.provideService(CryptoReference, {
+    ...cryptoService,
     digest: (algorithm, data) => {
       digestInput.push({
         algorithm,
@@ -179,7 +184,6 @@ it("supports dependency injection for crypto", async () => {
 
       return Promise.resolve(new Uint8Array(32).buffer);
     },
-    randomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto),
   });
   const effect = OAuth2PKCE.createCodeChallenge({
     codeVerifier: minimumLengthCodeVerifier,
@@ -194,6 +198,34 @@ it("supports dependency injection for crypto", async () => {
     },
   ]);
   expect(codeChallenge).toBe("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+});
+
+it("supports dependency injection for algorithms", async () => {
+  const digestInput: AlgorithmIdentifier[] = [];
+  const cryptoServiceWithDigest = {
+    ...cryptoService,
+    digest: (algorithm: AlgorithmIdentifier) => {
+      digestInput.push(algorithm);
+
+      return Promise.resolve(new Uint8Array(32).buffer);
+    },
+  };
+  const algorithmService = Effect.provideService(AlgorithmReference, {
+    ...AlgorithmReference.defaultValue(),
+    digest: { [AlgorithmReference.SHA256]: "SHA-512" },
+  });
+  const cryptoServiceProvider = Effect.provideService(
+    CryptoReference,
+    cryptoServiceWithDigest,
+  );
+  const effect = OAuth2PKCE.createCodeChallenge({
+    codeVerifier: minimumLengthCodeVerifier,
+    method: "S256",
+  }).pipe(algorithmService, cryptoServiceProvider);
+
+  await Effect.runPromise(effect);
+
+  expect(digestInput).toEqual(["SHA-512"]);
 });
 
 it("encodes S256 challenge using base64url without padding", async () => {
