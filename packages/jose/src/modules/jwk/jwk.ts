@@ -1,3 +1,4 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect, Schema } from "effect";
 
 import { Filters } from "../../utils/filters";
@@ -69,12 +70,12 @@ export class JWK {
         );
       }
 
+      const crypto = yield* CryptoReference;
+
       return yield* Effect.tryPromise({
         catch: () => new JWKKeyImportError({ message: "Invalid JWK key" }),
         try: () =>
-          crypto.subtle.importKey("jwk", key as JsonWebKey, alg, false, [
-            "verify",
-          ]),
+          crypto.importKey("jwk", key as JsonWebKey, alg, false, ["verify"]),
       });
     });
   }

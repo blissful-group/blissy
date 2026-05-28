@@ -3,6 +3,8 @@ import { expect, it } from "vitest";
 
 import { CryptoReference } from "./crypto";
 
+const encoder = new TextEncoder();
+
 it("provides default random values", async () => {
   const crypto = await Effect.runPromise(CryptoReference);
   const bytes = new Uint8Array(16);
@@ -15,7 +17,7 @@ it("provides default random values", async () => {
 
 it("provides default digest", async () => {
   const crypto = await Effect.runPromise(CryptoReference);
-  const data = new TextEncoder().encode("hello world");
+  const data = encoder.encode("hello world");
 
   const digest = await crypto.digest("SHA-256", data);
 
@@ -26,4 +28,48 @@ it("provides default digest", async () => {
       233,
     ]),
   );
+});
+
+it("provides default signing and verification", async () => {
+  const crypto = await Effect.runPromise(CryptoReference);
+  const key = await crypto.importKey(
+    "raw",
+    encoder.encode("super-secret-signing-key"),
+    { hash: "SHA-256", name: "HMAC" },
+    false,
+    ["sign", "verify"],
+  );
+  const payload = encoder.encode("hello world");
+
+  const signature = await crypto.sign("HMAC", key, payload);
+  const valid = await crypto.verify("HMAC", key, signature, payload);
+
+  expect(signature).toBeInstanceOf(ArrayBuffer);
+  expect(valid).toBe(true);
+});
+
+it("provides default encryption and decryption", async () => {
+  const crypto = await Effect.runPromise(CryptoReference);
+  const key = await crypto.importKey(
+    "raw",
+    encoder.encode("0123456789abcdef0123456789abcdef"),
+    { length: 256, name: "AES-GCM" },
+    false,
+    ["encrypt", "decrypt"],
+  );
+  const iv = new Uint8Array(12);
+  const payload = encoder.encode("hello world");
+
+  const ciphertext = await crypto.encrypt(
+    { iv, name: "AES-GCM" },
+    key,
+    payload,
+  );
+  const decrypted = await crypto.decrypt(
+    { iv, name: "AES-GCM" },
+    key,
+    ciphertext,
+  );
+
+  expect(new TextDecoder().decode(decrypted)).toBe("hello world");
 });

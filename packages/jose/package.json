@@ -65,6 +65,7 @@
     "test:bench": "vitest bench --run"
   },
   "dependencies": {
+    "@blissy-auth/crypto": "workspace:^",
     "effect": "^3.21.2"
   },
   "devDependencies": {

@@ -1,3 +1,4 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 
 import {
@@ -28,8 +29,9 @@ export class JWA {
     return Effect.gen(function* () {
       yield* JWA.validateAlgorithm(alg);
       yield* JWA.validateKeyCompatibility({ alg, key });
+      const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWA.importKey({ key, usage: "sign" });
-      const promise = crypto.subtle.sign(
+      const promise = crypto.sign(
         JWA.getSigningAlgorithm(alg),
         cryptoKey,
         new Uint8Array(payload),
@@ -58,8 +60,9 @@ export class JWA {
     return Effect.gen(function* () {
       yield* JWA.validateAlgorithm(alg);
       yield* JWA.validateKeyCompatibility({ alg, key });
+      const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWA.importKey({ key, usage: "verify" });
-      const promise = crypto.subtle.verify(
+      const promise = crypto.verify(
         JWA.getSigningAlgorithm(alg),
         cryptoKey,
         new Uint8Array(signature),
@@ -74,7 +77,8 @@ export class JWA {
     return Effect.gen(function* () {
       if (!(key instanceof Uint8Array)) return key;
 
-      const promise = crypto.subtle.importKey(
+      const crypto = yield* CryptoReference;
+      const promise = crypto.importKey(
         "raw",
         new Uint8Array(key),
         { hash: "SHA-256", name: "HMAC" },

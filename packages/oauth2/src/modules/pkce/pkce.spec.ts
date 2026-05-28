@@ -8,6 +8,7 @@ const minimumLengthCodeVerifier = "a".repeat(43);
 const maximumLengthCodeVerifier = "a".repeat(128);
 const rfc7636CodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 const rfc7636S256CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+const cryptoService = CryptoReference.defaultValue();
 
 it("accepts a code verifier of exactly 43 characters", async () => {
   await expect(
@@ -59,7 +60,7 @@ it("supports configurable code verifier length", async () => {
 
 it("supports dependency injection for randomness", async () => {
   const service = Effect.provideService(CryptoReference, {
-    digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
+    ...cryptoService,
     randomValues(bytes) {
       bytes.fill(0);
 
@@ -171,6 +172,7 @@ it("supports dependency injection for crypto", async () => {
     data: string;
   }> = [];
   const service = Effect.provideService(CryptoReference, {
+    ...cryptoService,
     digest: (algorithm, data) => {
       digestInput.push({
         algorithm,
@@ -179,7 +181,6 @@ it("supports dependency injection for crypto", async () => {
 
       return Promise.resolve(new Uint8Array(32).buffer);
     },
-    randomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto),
   });
   const effect = OAuth2PKCE.createCodeChallenge({
     codeVerifier: minimumLengthCodeVerifier,

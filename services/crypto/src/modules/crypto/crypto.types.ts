@@ -4,4 +4,9 @@ export type CryptoService = {
     algorithm: AlgorithmIdentifier,
     data: BufferSource,
   ) => Promise<ArrayBuffer>;
+  importKey: SubtleCrypto["importKey"];
+  sign: SubtleCrypto["sign"];
+  verify: SubtleCrypto["verify"];
+  encrypt: SubtleCrypto["encrypt"];
+  decrypt: SubtleCrypto["decrypt"];
 };

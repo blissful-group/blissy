@@ -23,6 +23,9 @@ importers:
 
   packages/jose:
     dependencies:
+      '@blissy-auth/crypto':
+        specifier: workspace:^
+        version: link:../../services/crypto
       effect:
         specifier: ^3.21.2
         version: 3.21.2

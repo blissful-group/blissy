@@ -11,3 +11,8 @@
 - This repo uses changesets cli
 - Create a changeset entry to cover affected projects
 - Private projects are just not published, but can be affected
+
+## Commit message
+
+- After a task create conventional commit message
+- Use no scope, or one of the available scopes in the .vscode settings

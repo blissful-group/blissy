@@ -1,3 +1,4 @@
+import { CryptoReference } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
@@ -194,13 +195,14 @@ export class JWE {
   }) {
     return Effect.gen(function* () {
       yield* JWE.validateProtectedHeader(protectedHeader);
+      const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWE.importKey(key);
-      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const iv = crypto.randomValues(new Uint8Array(12));
       const protectedSegment = yield* Base64.encode(
         JWE.encoder.encode(JSON.stringify(protectedHeader)),
       );
       const additionalData = JWE.encoder.encode(protectedSegment);
-      const promise = crypto.subtle.encrypt(
+      const promise = crypto.encrypt(
         {
           additionalData,
           iv,
@@ -254,6 +256,7 @@ export class JWE {
         );
       }
 
+      const crypto = yield* CryptoReference;
       const cryptoKey = yield* JWE.importKey(key);
       const iv = yield* Base64.decode(ivSegment);
       const ciphertext = yield* Base64.decode(ciphertextSegment);
@@ -264,7 +267,7 @@ export class JWE {
       encrypted.set(ciphertext);
       encrypted.set(tag, ciphertext.length);
 
-      const promise = crypto.subtle.decrypt(
+      const promise = crypto.decrypt(
         {
           additionalData,
           iv: new Uint8Array(iv),
@@ -286,15 +289,18 @@ export class JWE {
   }
 
   private static importKey(key: Uint8Array) {
-    const promise = crypto.subtle.importKey(
-      "raw",
-      new Uint8Array(key),
-      { length: 256, name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"],
-    );
+    return Effect.gen(function* () {
+      const crypto = yield* CryptoReference;
+      const promise = crypto.importKey(
+        "raw",
+        new Uint8Array(key),
+        { length: 256, name: "AES-GCM" },
+        false,
+        ["encrypt", "decrypt"],
+      );
 
-    return Effect.promise(() => promise);
+      return yield* Effect.promise(() => promise);
+    });
   }
 
   private static validateProtectedHeader(protectedHeader: {

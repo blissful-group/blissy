@@ -4,6 +4,8 @@ import { expect, it } from "vitest";
 
 import { OAuth2State } from "./state";
 
+const cryptoService = CryptoReference.defaultValue();
+
 it("generates a non-empty state value", async () => {
   const state = await Effect.runPromise(OAuth2State.generate());
 
@@ -32,7 +34,7 @@ it("supports configurable state byte length", async () => {
 
 it("supports dependency injection for randomness", async () => {
   const service = Effect.provideService(CryptoReference, {
-    digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
+    ...cryptoService,
     randomValues: (bytes) => {
       bytes.set([0xff, 0xee, 0xdd, 0xcc]);
 
