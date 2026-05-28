@@ -21,7 +21,7 @@ Every public API returns an `Effect`, so callers can decide whether to run it wi
 
 ## Dependencies
 
-`@blissy/jose` keeps its dependency surface intentionally small.
+`@blissy-auth/jose` keeps its dependency surface intentionally small.
 
 - Runtime dependencies: `effect`
 - No other runtime dependencies
@@ -33,7 +33,7 @@ The implementation relies on platform Web Crypto APIs and `effect`, rather than 
 ## Install
 
 ```bash
-pnpm add @blissy/jose effect
+pnpm add @blissy-auth/jose effect
 ```
 
 ## Runtime Requirements
