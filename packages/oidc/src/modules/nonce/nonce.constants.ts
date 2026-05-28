@@ -1,0 +1,1 @@
+export const NONCE_DEFAULT_BYTE_LENGTH = 32;

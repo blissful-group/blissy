@@ -20,6 +20,7 @@
   "conventionalCommits.scopes": [
     "jose",
     "oauth2",
-    "crypto"
+    "crypto",
+    "oidc"
   ]
 }
