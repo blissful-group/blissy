@@ -1,6 +1,8 @@
+import type { JWAAlgorithm } from "../jwa/jwa.types";
+
 export type JWSHeaderValue = string | number | boolean | null | string[];
 
 export type JWSHeader = Record<string, JWSHeaderValue> & {
-  alg: "HS256";
+  alg: JWAAlgorithm;
   crit?: string[];
 };

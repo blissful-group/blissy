@@ -7,3 +7,7 @@ export class JWKSetParseError extends Data.TaggedError("JWKSetParseError")<{
 export class JWKKeyMatchError extends Data.TaggedError("JWKKeyMatchError")<{
   message: "Multiple JWKs matched the given criteria";
 }> {}
+
+export class JWKKeyImportError extends Data.TaggedError("JWKKeyImportError")<{
+  message: "Invalid JWK key";
+}> {}

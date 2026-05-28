@@ -1,12 +1,14 @@
 import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
+import { JWA } from "../jwa/jwa";
+import type { JWAKey } from "../jwa/jwa.types";
 import { SUPPORTED_CRITICAL_HEADERS } from "./jws.constants";
 import { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
 import type { JWSHeader, JWSHeaderValue } from "./jws.types";
 
 /**
- * Creates and verifies JSON Web Signatures using base64url encoding and HS256.
+ * Creates and verifies JSON Web Signatures using base64url encoding.
  */
 export class JWS {
   static CriticalHeaderError = JWSCriticalHeaderError;
@@ -19,7 +21,7 @@ export class JWS {
    * Creates a compact JWS serialization.
    */
   static signCompact(input: {
-    key: Uint8Array;
+    key: JWAKey;
     payload: Uint8Array;
     protectedHeader: JWSHeader;
     header?: Record<string, JWSHeaderValue>;
@@ -34,7 +36,7 @@ export class JWS {
   /**
    * Verifies a compact JWS serialization and returns its decoded payload and protected header.
    */
-  static verifyCompact({ key, token }: { key: Uint8Array; token: string }) {
+  static verifyCompact({ key, token }: { key: JWAKey; token: string }) {
     return Effect.gen(function* () {
       const segments = token.split(".");
 
@@ -55,11 +57,12 @@ export class JWS {
       yield* JWS.validateCrit(protectedHeader);
 
       const signature = yield* Base64.decode(signatureSegment!);
-      const valid = yield* JWS.verify(
+      const valid = yield* JWA.verify({
+        alg: protectedHeader.alg,
         key,
-        `${protectedSegment}.${payloadSegment}`,
+        payload: JWS.encoder.encode(`${protectedSegment}.${payloadSegment}`),
         signature,
-      );
+      });
 
       if (!valid) {
         return yield* Effect.fail(
@@ -80,7 +83,7 @@ export class JWS {
    * Creates a flattened JSON JWS serialization.
    */
   static signFlattened(input: {
-    key: Uint8Array;
+    key: JWAKey;
     payload: Uint8Array;
     protectedHeader: JWSHeader;
     header?: Record<string, JWSHeaderValue>;
@@ -106,7 +109,7 @@ export class JWS {
   }: {
     payload: Uint8Array;
     signatures: Array<{
-      key: Uint8Array;
+      key: JWAKey;
       protectedHeader: JWSHeader;
       header?: Record<string, JWSHeaderValue>;
     }>;
@@ -123,10 +126,12 @@ export class JWS {
         const protectedSegment = yield* Base64.encode(
           JWS.encoder.encode(JSON.stringify(signatureInput.protectedHeader)),
         );
-        const signature = yield* JWS.sign(
-          signatureInput.key,
-          `${protectedSegment}.${payloadSegment}`,
-        );
+        const signatureBytes = yield* JWA.sign({
+          alg: signatureInput.protectedHeader.alg,
+          key: signatureInput.key,
+          payload: JWS.encoder.encode(`${protectedSegment}.${payloadSegment}`),
+        });
+        const signature = yield* Base64.encode(signatureBytes);
 
         serializedSignatures.push({
           header: signatureInput.header,
@@ -139,51 +144,6 @@ export class JWS {
         payload: payloadSegment,
         signatures: serializedSignatures,
       };
-    });
-  }
-
-  private static importHmacKey(key: Uint8Array) {
-    return Effect.promise(() =>
-      crypto.subtle.importKey(
-        "raw",
-        new Uint8Array(key),
-        {
-          hash: "SHA-256",
-          name: "HMAC",
-        },
-        false,
-        ["sign", "verify"],
-      ),
-    );
-  }
-
-  private static sign(key: Uint8Array, signingInput: string) {
-    return Effect.gen(function* () {
-      const cryptoKey = yield* JWS.importHmacKey(key);
-      const signature = yield* Effect.promise(() =>
-        crypto.subtle.sign("HMAC", cryptoKey, JWS.encoder.encode(signingInput)),
-      );
-
-      return yield* Base64.encode(new Uint8Array(signature));
-    });
-  }
-
-  private static verify(
-    key: Uint8Array,
-    signingInput: string,
-    signature: Uint8Array,
-  ) {
-    return Effect.gen(function* () {
-      const cryptoKey = yield* JWS.importHmacKey(key);
-
-      return yield* Effect.promise(() =>
-        crypto.subtle.verify(
-          "HMAC",
-          cryptoKey,
-          new Uint8Array(signature),
-          JWS.encoder.encode(signingInput),
-        ),
-      );
     });
   }
 
@@ -207,7 +167,7 @@ export class JWS {
     payload,
     protectedHeader,
   }: {
-    key: Uint8Array;
+    key: JWAKey;
     payload: Uint8Array;
     protectedHeader: JWSHeader;
     header?: Record<string, JWSHeaderValue>;
@@ -217,10 +177,12 @@ export class JWS {
         JWS.encoder.encode(JSON.stringify(protectedHeader)),
       );
       const payloadSegment = yield* Base64.encode(payload);
-      const signature = yield* JWS.sign(
+      const signatureBytes = yield* JWA.sign({
+        alg: protectedHeader.alg,
         key,
-        `${protectedSegment}.${payloadSegment}`,
-      );
+        payload: JWS.encoder.encode(`${protectedSegment}.${payloadSegment}`),
+      });
+      const signature = yield* Base64.encode(signatureBytes);
 
       return {
         header,

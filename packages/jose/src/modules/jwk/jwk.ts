@@ -1,17 +1,26 @@
 import { Effect, Schema } from "effect";
 
 import { Filters } from "../../utils/filters";
-import { JWKKeyMatchError, JWKSetParseError } from "./jwk.errors";
+import {
+  JWKKeyImportError,
+  JWKKeyMatchError,
+  JWKSetParseError,
+} from "./jwk.errors";
 import { JWKSetSchema } from "./jwk.schema";
 import type { JWKKey, JWKSet, JWKValue } from "./jwk.types";
 
-export { JWKKeyMatchError, JWKSetParseError } from "./jwk.errors";
+export {
+  JWKKeyImportError,
+  JWKKeyMatchError,
+  JWKSetParseError,
+} from "./jwk.errors";
 
 /**
  * Parses JWK Sets and selects matching keys.
  */
 export class JWK {
   static KeyMatchError = JWKKeyMatchError;
+  static KeyImportError = JWKKeyImportError;
   static SetParseError = JWKSetParseError;
 
   /**
@@ -45,6 +54,39 @@ export class JWK {
 
       return matches[0];
     });
+  }
+
+  /**
+   * Imports a public JWK for signature verification.
+   */
+  static importVerificationKey(key: JWKKey) {
+    return Effect.gen(function* () {
+      const alg = JWK.getAlgorithm(key);
+
+      if (alg === undefined) {
+        return yield* Effect.fail(
+          new JWKKeyImportError({ message: "Invalid JWK key" }),
+        );
+      }
+
+      return yield* Effect.tryPromise({
+        catch: () => new JWKKeyImportError({ message: "Invalid JWK key" }),
+        try: () =>
+          crypto.subtle.importKey("jwk", key as JsonWebKey, alg, false, [
+            "verify",
+          ]),
+      });
+    });
+  }
+
+  private static getAlgorithm(key: JWKKey) {
+    if (key.kty === "RSA") {
+      return { hash: "SHA-256", name: "RSASSA-PKCS1-v1_5" } as const;
+    }
+
+    if (key.kty === "EC" && key.crv === "P-256") {
+      return { name: "ECDSA", namedCurve: "P-256" } as const;
+    }
   }
 }
 

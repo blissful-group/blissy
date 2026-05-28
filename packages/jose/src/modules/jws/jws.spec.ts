@@ -49,6 +49,70 @@ it("verifies compact JWS serialization", async () => {
   });
 });
 
+it("verifies compact JWS serialization with RS256", async () => {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      hash: "SHA-256",
+      modulusLength: 2048,
+      name: "RSASSA-PKCS1-v1_5",
+      publicExponent: new Uint8Array([1, 0, 1]),
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const token = await Effect.runPromise(
+    JWS.signCompact({
+      key: keyPair.privateKey,
+      payload,
+      protectedHeader: {
+        alg: "RS256",
+        typ: "JWT",
+      },
+    }),
+  );
+
+  const result = await Effect.runPromise(
+    JWS.verifyCompact({ key: keyPair.publicKey, token }),
+  );
+
+  expect(decoder.decode(result.payload)).toBe("hello world");
+  expect(result.protectedHeader).toEqual({
+    alg: "RS256",
+    typ: "JWT",
+  });
+});
+
+it("verifies compact JWS serialization with ES256", async () => {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: "ECDSA",
+      namedCurve: "P-256",
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const token = await Effect.runPromise(
+    JWS.signCompact({
+      key: keyPair.privateKey,
+      payload,
+      protectedHeader: {
+        alg: "ES256",
+        typ: "JWT",
+      },
+    }),
+  );
+
+  const result = await Effect.runPromise(
+    JWS.verifyCompact({ key: keyPair.publicKey, token }),
+  );
+
+  expect(decoder.decode(result.payload)).toBe("hello world");
+  expect(result.protectedHeader).toEqual({
+    alg: "ES256",
+    typ: "JWT",
+  });
+});
+
 it("verifies known critical headers", async () => {
   const token = await Effect.runPromise(
     JWS.signCompact({

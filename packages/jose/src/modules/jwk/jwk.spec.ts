@@ -62,6 +62,88 @@ it("finds a key by kid", async () => {
   expect(key).toEqual(jwkSet.keys[1]);
 });
 
+it("imports an RSA verification key", async () => {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      hash: "SHA-256",
+      modulusLength: 2048,
+      name: "RSASSA-PKCS1-v1_5",
+      publicExponent: new Uint8Array([1, 0, 1]),
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const jwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+
+  const key = await Effect.runPromise(
+    JWK.importVerificationKey({
+      ...jwk,
+      alg: "RS256",
+      kid: "sig-1",
+    } as JWK.Key),
+  );
+
+  expect(key).toBeInstanceOf(CryptoKey);
+  expect(key.algorithm.name).toBe("RSASSA-PKCS1-v1_5");
+  expect(key.usages).toEqual(["verify"]);
+});
+
+it("imports an EC verification key", async () => {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: "ECDSA",
+      namedCurve: "P-256",
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const jwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+
+  const key = await Effect.runPromise(
+    JWK.importVerificationKey({
+      ...jwk,
+      alg: "ES256",
+      kid: "sig-1",
+    } as JWK.Key),
+  );
+
+  expect(key).toBeInstanceOf(CryptoKey);
+  expect(key.algorithm.name).toBe("ECDSA");
+  expect(key.usages).toEqual(["verify"]);
+});
+
+it("rejects unsupported verification keys", async () => {
+  const effect = Effect.match(
+    JWK.importVerificationKey({ k: "secret", kty: "oct" }),
+    {
+      onFailure: (error) => error,
+      onSuccess: () => null,
+    },
+  );
+
+  const error = await Effect.runPromise(effect);
+
+  expect(error).toBeInstanceOf(JWK.KeyImportError);
+  expect(error?._tag).toBe("JWKKeyImportError");
+  expect(error?.message).toBe("Invalid JWK key");
+});
+
+it("rejects malformed verification keys", async () => {
+  const effect = Effect.match(
+    JWK.importVerificationKey({ e: "AQAB", kty: "RSA" }),
+    {
+      onFailure: (error) => error,
+      onSuccess: () => null,
+    },
+  );
+
+  const error = await Effect.runPromise(effect);
+
+  expect(error).toBeInstanceOf(JWK.KeyImportError);
+  expect(error?._tag).toBe("JWKKeyImportError");
+  expect(error?.message).toBe("Invalid JWK key");
+});
+
 it("rejects ambiguous key matches", async () => {
   const effect = Effect.match(
     JWK.findKey({
