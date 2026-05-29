@@ -1,6 +1,6 @@
 {
   "name": "@blissy-auth/oauth2",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "TypeScript implementation of the OAuth 2.0 protocol primitives with support for authorization requests, token requests, PKCE, scopes, client authentication, token revocation, and token introspection.",
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",

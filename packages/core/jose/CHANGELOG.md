@@ -1,5 +1,12 @@
 # @blissy-auth/jose
 
+## 0.1.2
+
+### Patch Changes
+
+- 3ce931a: Move core package sources under `packages/core`.
+- 5d23827: Refactor JOSE internals into module helper classes for more focused validation and helper testing.
+
 ## 0.1.1
 
 ### Patch Changes
