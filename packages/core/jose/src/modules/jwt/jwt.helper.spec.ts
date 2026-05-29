@@ -63,6 +63,15 @@ it("validates aud", async () => {
   expect(error?.message).toBe('Invalid JWT claim "aud"');
 });
 
+it("allows aud arrays containing the expected audience", async () => {
+  await Effect.runPromise(
+    Helper.validateAudience({
+      audience: "api",
+      claims: { aud: ["mobile", "api"] },
+    }),
+  );
+});
+
 it("validates exp", async () => {
   const effect = Effect.match(
     Helper.validateExpiration({
@@ -81,6 +90,16 @@ it("validates exp", async () => {
   expect(error).toBeInstanceOf(JWTClaimValidationError);
   expect(error?._tag).toBe("JWTClaimValidationError");
   expect(error?.message).toBe('Invalid JWT claim "exp"');
+});
+
+it("allows missing exp", async () => {
+  await Effect.runPromise(
+    Helper.validateExpiration({
+      claims: {},
+      clockTolerance: 0,
+      now,
+    }),
+  );
 });
 
 it("allows exp within clock tolerance", async () => {
@@ -133,6 +152,16 @@ it("validates nbf", async () => {
   expect(error?.message).toBe('Invalid JWT claim "nbf"');
 });
 
+it("allows missing nbf", async () => {
+  await Effect.runPromise(
+    Helper.validateNotBefore({
+      claims: {},
+      clockTolerance: 0,
+      now,
+    }),
+  );
+});
+
 it("allows nbf within clock tolerance", async () => {
   await Effect.runPromise(
     Helper.validateNotBefore({
@@ -181,6 +210,16 @@ it("validates iat", async () => {
   expect(error).toBeInstanceOf(JWTClaimValidationError);
   expect(error?._tag).toBe("JWTClaimValidationError");
   expect(error?.message).toBe('Invalid JWT claim "iat"');
+});
+
+it("allows missing iat", async () => {
+  await Effect.runPromise(
+    Helper.validateIssuedAt({
+      claims: {},
+      clockTolerance: 0,
+      now,
+    }),
+  );
 });
 
 it("allows iat within clock tolerance", async () => {

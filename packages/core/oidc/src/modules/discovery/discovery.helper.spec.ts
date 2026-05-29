@@ -182,3 +182,19 @@ it("rejects invalid string arrays", async () => {
   expect(error?._tag).toBe("OIDCDiscoveryValidationError");
   expect(error?.message).toBe("Invalid scopes supported");
 });
+
+it("rejects string arrays containing invalid items", async () => {
+  const effect = Effect.match(
+    Helper.parseStringArray(["openid", ""], "Invalid scopes supported"),
+    {
+      onFailure: (error) => error,
+      onSuccess: () => null,
+    },
+  );
+
+  const error = await Effect.runPromise(effect);
+
+  expect(error).toBeInstanceOf(OIDCDiscoveryValidationError);
+  expect(error?._tag).toBe("OIDCDiscoveryValidationError");
+  expect(error?.message).toBe("Invalid scopes supported");
+});
