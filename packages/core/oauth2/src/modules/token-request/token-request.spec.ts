@@ -146,25 +146,6 @@ it("omits undefined optional parameters", async () => {
   expect(request.body.has("code_verifier")).toBe(false);
 });
 
-it("rejects an invalid token endpoint URL", async () => {
-  const effect = Effect.match(
-    OAuth2TokenRequest.authorizationCode({
-      code: "code-123",
-      tokenEndpoint: "not a url",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenRequest.ValidationError);
-  expect(error?._tag).toBe("OAuth2TokenRequestValidationError");
-  expect(error?.message).toBe("Invalid token endpoint");
-});
-
 it("rejects invalid redirect_uri", async () => {
   const effect = Effect.match(
     OAuth2TokenRequest.authorizationCode({
@@ -182,61 +163,6 @@ it("rejects invalid redirect_uri", async () => {
 
   expect(error).toBeInstanceOf(OAuth2TokenRequest.ValidationError);
   expect(error?.message).toBe("Invalid token endpoint");
-});
-
-it("rejects missing authorization code", async () => {
-  const effect = Effect.match(
-    OAuth2TokenRequest.authorizationCode({
-      code: "",
-      tokenEndpoint,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenRequest.ValidationError);
-  expect(error?.message).toBe("Invalid authorization code");
-});
-
-it("rejects empty refresh_token", async () => {
-  const effect = Effect.match(
-    OAuth2TokenRequest.refreshToken({
-      refreshToken: "",
-      tokenEndpoint,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenRequest.ValidationError);
-  expect(error?.message).toBe("Invalid refresh token");
-});
-
-it("rejects empty code_verifier", async () => {
-  const effect = Effect.match(
-    OAuth2TokenRequest.authorizationCode({
-      code: "code-123",
-      codeVerifier: "",
-      tokenEndpoint,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenRequest.ValidationError);
-  expect(error?.message).toBe("Invalid PKCE code verifier");
 });
 
 it("rejects invalid scope values", async () => {

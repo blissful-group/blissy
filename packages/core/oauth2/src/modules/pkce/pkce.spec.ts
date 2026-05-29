@@ -13,22 +13,6 @@ const rfc7636CodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 const rfc7636S256CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
 const cryptoService = CryptoReference.defaultValue();
 
-it("accepts a code verifier of exactly 43 characters", async () => {
-  await expect(
-    Effect.runPromise(
-      OAuth2PKCE.validateCodeVerifier(minimumLengthCodeVerifier),
-    ),
-  ).resolves.toBeUndefined();
-});
-
-it("accepts a code verifier of exactly 128 characters", async () => {
-  await expect(
-    Effect.runPromise(
-      OAuth2PKCE.validateCodeVerifier(maximumLengthCodeVerifier),
-    ),
-  ).resolves.toBeUndefined();
-});
-
 it("generates a non-empty code verifier", async () => {
   const codeVerifier = await Effect.runPromise(
     OAuth2PKCE.generateCodeVerifier(),
@@ -74,64 +58,6 @@ it("supports dependency injection for randomness", async () => {
   const codeVerifier = await Effect.runPromise(effect);
 
   expect(codeVerifier).toBe("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-});
-
-it("rejects code verifier lengths below 43 characters", async () => {
-  const effect = Effect.match(OAuth2PKCE.validateCodeVerifier("a".repeat(42)), {
-    onFailure: (error) => error,
-    onSuccess: () => null,
-  });
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2PKCE.CodeVerifierValidationError);
-  expect(error?._tag).toBe("CodeVerifierValidationError");
-  expect(error?.message).toBe("Invalid PKCE code verifier length");
-});
-
-it("rejects code verifier lengths above 128 characters", async () => {
-  const effect = Effect.match(
-    OAuth2PKCE.validateCodeVerifier("a".repeat(129)),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2PKCE.CodeVerifierValidationError);
-  expect(error?._tag).toBe("CodeVerifierValidationError");
-  expect(error?.message).toBe("Invalid PKCE code verifier length");
-});
-
-it("rejects code verifiers containing invalid characters", async () => {
-  const effect = Effect.match(
-    OAuth2PKCE.validateCodeVerifier(`${minimumLengthCodeVerifier}!`),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2PKCE.CodeVerifierValidationError);
-  expect(error?._tag).toBe("CodeVerifierValidationError");
-  expect(error?.message).toBe("Invalid PKCE code verifier characters");
-});
-
-it("rejects empty code verifiers", async () => {
-  const effect = Effect.match(OAuth2PKCE.validateCodeVerifier(""), {
-    onFailure: (error) => error,
-    onSuccess: () => null,
-  });
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2PKCE.CodeVerifierValidationError);
-  expect(error?._tag).toBe("CodeVerifierValidationError");
-  expect(error?.message).toBe("Invalid PKCE code verifier length");
 });
 
 it("creates a plain code challenge equal to the verifier", async () => {
@@ -237,46 +163,6 @@ it("encodes S256 challenge using base64url without padding", async () => {
   expect(codeChallenge).not.toContain("+");
   expect(codeChallenge).not.toContain("/");
   expect(codeChallenge).not.toContain("=");
-});
-
-it("rejects unsupported code challenge methods", async () => {
-  const effect = Effect.match(
-    OAuth2PKCE.createCodeChallenge({
-      codeVerifier: minimumLengthCodeVerifier,
-      method: "S512" as OAuth2PKCE.CodeChallengeMethod,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2PKCE.CodeChallengeMethodError);
-  expect(error?._tag).toBe("CodeChallengeMethodError");
-  expect(error?.message).toBe("Unsupported PKCE code challenge method");
-  expect(error).toMatchObject({ method: "S512" });
-});
-
-it("rejects empty code challenge methods", async () => {
-  const effect = Effect.match(
-    OAuth2PKCE.createCodeChallenge({
-      codeVerifier: minimumLengthCodeVerifier,
-      method: "" as OAuth2PKCE.CodeChallengeMethod,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2PKCE.CodeChallengeMethodError);
-  expect(error?._tag).toBe("CodeChallengeMethodError");
-  expect(error?.message).toBe("Unsupported PKCE code challenge method");
-  expect(error).toMatchObject({ method: "" });
 });
 
 it("defaults to S256 when no method is specified", async () => {

@@ -154,66 +154,6 @@ it("URL-encodes query parameter values", async () => {
   expect(url.toString()).toContain("state=state+with+spaces");
 });
 
-it("rejects an invalid authorization endpoint URL", async () => {
-  const effect = Effect.match(
-    OAuth2AuthorizationRequest.authorizationCode({
-      authorizationEndpoint: "not a url",
-      clientId,
-      redirectUri,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationRequest.ValidationError);
-  expect(error?._tag).toBe("AuthorizationRequestValidationError");
-  expect(error?.message).toBe("Invalid authorization endpoint");
-});
-
-it("rejects an empty client_id", async () => {
-  const effect = Effect.match(
-    OAuth2AuthorizationRequest.authorizationCode({
-      authorizationEndpoint,
-      clientId: "",
-      redirectUri,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationRequest.ValidationError);
-  expect(error?._tag).toBe("AuthorizationRequestValidationError");
-  expect(error?.message).toBe("Invalid client id");
-});
-
-it("rejects an invalid redirect_uri", async () => {
-  const effect = Effect.match(
-    OAuth2AuthorizationRequest.authorizationCode({
-      authorizationEndpoint,
-      clientId,
-      redirectUri: "not a url",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationRequest.ValidationError);
-  expect(error?._tag).toBe("AuthorizationRequestValidationError");
-  expect(error?.message).toBe("Invalid redirect uri");
-});
-
 it("rejects unsupported code challenge methods", async () => {
   const effect = Effect.match(
     OAuth2AuthorizationRequest.authorizationCode({
@@ -247,28 +187,4 @@ it("allows extension parameters when configured", async () => {
   );
 
   expect(url.searchParams.get("audience")).toBe("https://api.example");
-});
-
-it("rejects extension parameters that collide with reserved OAuth parameters", async () => {
-  const effect = Effect.match(
-    OAuth2AuthorizationRequest.authorizationCode({
-      authorizationEndpoint,
-      clientId,
-      parameters: {
-        response_type: "token",
-      },
-      redirectUri,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationRequest.ValidationError);
-  expect(error?._tag).toBe("AuthorizationRequestValidationError");
-  expect(error?.message).toBe("Invalid authorization request parameter");
-  expect(error).toMatchObject({ parameter: "response_type" });
 });

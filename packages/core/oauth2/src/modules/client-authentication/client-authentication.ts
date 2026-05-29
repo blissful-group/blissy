@@ -1,12 +1,14 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import { OAuth2ClientAuthenticationError } from "./client-authentication.errors";
-import { ClientCredentialSchema } from "./client-authentication.schema";
+import { Helper } from "./client-authentication.helper";
 
 /**
  * Builds reusable OAuth 2.0 client authentication request fragments.
  */
 export class OAuth2ClientAuthentication {
+  private static Helper = Helper;
+
   /**
    * Error returned when client authentication input is invalid.
    */
@@ -27,7 +29,7 @@ export class OAuth2ClientAuthentication {
     strict?: boolean;
   }) {
     return Effect.gen(function* () {
-      yield* OAuth2ClientAuthentication.validateClientId(clientId);
+      yield* OAuth2ClientAuthentication.Helper.validateClientId(clientId);
 
       if (strict && clientSecret !== undefined) {
         const error = new OAuth2ClientAuthenticationError({
@@ -55,11 +57,13 @@ export class OAuth2ClientAuthentication {
     clientSecret: string;
   }) {
     return Effect.gen(function* () {
-      yield* OAuth2ClientAuthentication.validateClientId(clientId);
-      yield* OAuth2ClientAuthentication.validateClientSecret(clientSecret);
+      yield* OAuth2ClientAuthentication.Helper.validateClientId(clientId);
+      yield* OAuth2ClientAuthentication.Helper.validateClientSecret(
+        clientSecret,
+      );
 
       const encodedCredentials = btoa(
-        `${OAuth2ClientAuthentication.formEncode(clientId)}:${OAuth2ClientAuthentication.formEncode(clientSecret)}`,
+        `${OAuth2ClientAuthentication.Helper.formEncode(clientId)}:${OAuth2ClientAuthentication.Helper.formEncode(clientSecret)}`,
       );
 
       return {
@@ -82,8 +86,10 @@ export class OAuth2ClientAuthentication {
     clientSecret: string;
   }) {
     return Effect.gen(function* () {
-      yield* OAuth2ClientAuthentication.validateClientId(clientId);
-      yield* OAuth2ClientAuthentication.validateClientSecret(clientSecret);
+      yield* OAuth2ClientAuthentication.Helper.validateClientId(clientId);
+      yield* OAuth2ClientAuthentication.Helper.validateClientSecret(
+        clientSecret,
+      );
 
       return {
         bodyParameters: {
@@ -93,31 +99,5 @@ export class OAuth2ClientAuthentication {
         headers: {},
       };
     });
-  }
-
-  private static validateClientId(clientId: string) {
-    return Effect.mapError(
-      Schema.decodeUnknown(ClientCredentialSchema)(clientId),
-      () =>
-        new OAuth2ClientAuthenticationError({
-          message: "Invalid OAuth2 client id",
-        }),
-    );
-  }
-
-  private static validateClientSecret(clientSecret: string) {
-    return Effect.mapError(
-      Schema.decodeUnknown(ClientCredentialSchema)(clientSecret),
-      () =>
-        new OAuth2ClientAuthenticationError({
-          message: "Invalid OAuth2 client secret",
-        }),
-    );
-  }
-
-  private static formEncode(value: string) {
-    const parameters = new URLSearchParams({ value });
-
-    return parameters.toString().slice("value=".length);
   }
 }

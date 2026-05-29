@@ -1,8 +1,8 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import { OAuth2Scope } from "../scope/scope";
 import { OAuth2TokenRequestValidationError } from "./token-request.errors";
-import { TokenRequestReservedParameterSchema } from "./token-request.schema";
+import { Helper } from "./token-request.helper";
 import type {
   OAuth2TokenRequestAuthentication,
   OAuth2TokenRequestExtensionParameters,
@@ -13,6 +13,8 @@ import type {
  * Builds OAuth 2.0 token endpoint request objects without performing IO.
  */
 export class OAuth2TokenRequest {
+  private static Helper = Helper;
+
   /**
    * Error returned when token request input is invalid.
    */
@@ -37,20 +39,20 @@ export class OAuth2TokenRequest {
     parameters?: OAuth2TokenRequestExtensionParameters;
   }) {
     return Effect.gen(function* () {
-      yield* OAuth2TokenRequest.validateNonEmpty(
+      yield* OAuth2TokenRequest.Helper.validateNonEmpty(
         code,
         "Invalid authorization code",
       );
 
       if (codeVerifier !== undefined) {
-        yield* OAuth2TokenRequest.validateNonEmpty(
+        yield* OAuth2TokenRequest.Helper.validateNonEmpty(
           codeVerifier,
           "Invalid PKCE code verifier",
         );
       }
 
       if (redirectUri !== undefined) {
-        yield* OAuth2TokenRequest.parseUrl(
+        yield* OAuth2TokenRequest.Helper.parseUrl(
           redirectUri,
           "Invalid token endpoint",
         );
@@ -87,7 +89,7 @@ export class OAuth2TokenRequest {
     parameters?: OAuth2TokenRequestExtensionParameters;
   }) {
     return Effect.gen(function* () {
-      yield* OAuth2TokenRequest.validateNonEmpty(
+      yield* OAuth2TokenRequest.Helper.validateNonEmpty(
         refreshToken,
         "Invalid refresh token",
       );
@@ -146,24 +148,20 @@ export class OAuth2TokenRequest {
     parameters?: OAuth2TokenRequestExtensionParameters;
   }) {
     return Effect.gen(function* () {
-      const url = yield* OAuth2TokenRequest.parseUrl(
+      const url = yield* OAuth2TokenRequest.Helper.parseUrl(
         tokenEndpoint,
         "Invalid token endpoint",
       );
       const body = new URLSearchParams();
 
-      OAuth2TokenRequest.append(body, bodyParameters);
-      OAuth2TokenRequest.append(body, authentication?.bodyParameters ?? {});
+      OAuth2TokenRequest.Helper.append(body, bodyParameters);
+      OAuth2TokenRequest.Helper.append(
+        body,
+        authentication?.bodyParameters ?? {},
+      );
 
       for (const [parameter, value] of Object.entries(parameters ?? {})) {
-        if (OAuth2TokenRequest.isReservedParameter(parameter)) {
-          const error = new OAuth2TokenRequestValidationError({
-            message: "Invalid token request parameter",
-            parameter,
-          });
-
-          return yield* Effect.fail(error);
-        }
+        yield* OAuth2TokenRequest.Helper.validateExtensionParameter(parameter);
 
         if (value !== undefined && value !== null) {
           body.set(parameter, value);
@@ -180,41 +178,6 @@ export class OAuth2TokenRequest {
         url,
       };
     });
-  }
-
-  private static append(
-    body: URLSearchParams,
-    parameters: Readonly<Record<string, string | undefined>>,
-  ) {
-    for (const [parameter, value] of Object.entries(parameters)) {
-      if (value !== undefined) {
-        body.set(parameter, value);
-      }
-    }
-  }
-
-  private static parseUrl(value: string, message: "Invalid token endpoint") {
-    return Effect.mapError(
-      Schema.decodeUnknown(Schema.URL)(value),
-      () => new OAuth2TokenRequestValidationError({ message }),
-    );
-  }
-
-  private static validateNonEmpty(
-    value: string,
-    message:
-      | "Invalid authorization code"
-      | "Invalid refresh token"
-      | "Invalid PKCE code verifier",
-  ) {
-    return Effect.mapError(
-      Schema.decodeUnknown(Schema.NonEmptyString)(value),
-      () => new OAuth2TokenRequestValidationError({ message }),
-    );
-  }
-
-  private static isReservedParameter(value: string) {
-    return Schema.is(TokenRequestReservedParameterSchema)(value);
   }
 }
 

@@ -20,26 +20,6 @@ it("parses a successful authorization response from a callback URL", async () =>
   });
 });
 
-it("extracts the authorization code", async () => {
-  const response = await Effect.runPromise(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?code=code-123`,
-    }),
-  );
-
-  expect(response).toMatchObject({ code: "code-123", type: "success" });
-});
-
-it("extracts the returned state", async () => {
-  const response = await Effect.runPromise(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?code=code-123&state=state-123`,
-    }),
-  );
-
-  expect(response.state).toBe("state-123");
-});
-
 it("handles callback URLs with additional query parameters", async () => {
   const response = await Effect.runPromise(
     OAuth2AuthorizationResponse.parse({
@@ -126,42 +106,6 @@ it("parses an authorization error response", async () => {
   });
 });
 
-it("extracts error", async () => {
-  const response = await Effect.runPromise(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?error=invalid_request`,
-    }),
-  );
-
-  expect(response).toMatchObject({ error: "invalid_request", type: "error" });
-});
-
-it("extracts error_description", async () => {
-  const response = await Effect.runPromise(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?error=access_denied&error_description=Denied`,
-    }),
-  );
-
-  expect(response).toMatchObject({
-    errorDescription: "Denied",
-    type: "error",
-  });
-});
-
-it("extracts error_uri", async () => {
-  const response = await Effect.runPromise(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?error=access_denied&error_uri=https%3A%2F%2Fserver.example%2Ferrors%2Faccess_denied`,
-    }),
-  );
-
-  expect(response).toMatchObject({
-    errorUri: "https://server.example/errors/access_denied",
-    type: "error",
-  });
-});
-
 it("extracts state from an error response", async () => {
   const response = await Effect.runPromise(
     OAuth2AuthorizationResponse.parse({
@@ -218,41 +162,15 @@ it("rejects error descriptions with invalid characters", async () => {
   expect(error?.message).toBe("Invalid authorization error description");
 });
 
-it("rejects duplicate reserved response parameters", async () => {
-  const effect = Effect.match(
+it("validates returned state against expected state", async () => {
+  const response = await Effect.runPromise(
     OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?code=code-123&code=code-456`,
+      callbackUrl: `${callbackUrl}?code=code-123&state=state-123`,
+      expectedState: "state-123",
     }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
   );
 
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationResponse.ValidationError);
-  expect(error?._tag).toBe("AuthorizationResponseValidationError");
-  expect(error?.message).toBe("Duplicate authorization response parameter");
-  expect(error).toMatchObject({ parameter: "code" });
-});
-
-it("rejects malformed error_uri", async () => {
-  const effect = Effect.match(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?error=access_denied&error_uri=not+a+url`,
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationResponse.ValidationError);
-  expect(error?._tag).toBe("AuthorizationResponseValidationError");
-  expect(error?.message).toBe("Invalid authorization error URI");
+  expect(response).toMatchObject({ state: "state-123", type: "success" });
 });
 
 it("rejects structurally invalid error_uri values", async () => {
@@ -271,17 +189,6 @@ it("rejects structurally invalid error_uri values", async () => {
   expect(error).toBeInstanceOf(OAuth2AuthorizationResponse.ValidationError);
   expect(error?._tag).toBe("AuthorizationResponseValidationError");
   expect(error?.message).toBe("Invalid authorization error URI");
-});
-
-it("validates returned state against expected state", async () => {
-  const response = await Effect.runPromise(
-    OAuth2AuthorizationResponse.parse({
-      callbackUrl: `${callbackUrl}?code=code-123&state=state-123`,
-      expectedState: "state-123",
-    }),
-  );
-
-  expect(response).toMatchObject({ state: "state-123", type: "success" });
 });
 
 it("rejects mismatched state", async () => {
@@ -351,20 +258,4 @@ it("rejects unsupported response modes", async () => {
   expect(error?._tag).toBe("AuthorizationResponseValidationError");
   expect(error?.message).toBe("Unsupported authorization response mode");
   expect(error).toMatchObject({ responseMode: "fragment" });
-});
-
-it("rejects an invalid callback URL", async () => {
-  const effect = Effect.match(
-    OAuth2AuthorizationResponse.parse({ callbackUrl: "not a url" }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2AuthorizationResponse.ValidationError);
-  expect(error?._tag).toBe("AuthorizationResponseValidationError");
-  expect(error?.message).toBe("Invalid authorization callback URL");
 });

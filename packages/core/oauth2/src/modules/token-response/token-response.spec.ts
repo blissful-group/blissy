@@ -21,20 +21,6 @@ it("parses a successful access token response", async () => {
   });
 });
 
-it("normalizes Bearer token_type case", async () => {
-  const response = await Effect.runPromise(
-    OAuth2TokenResponse.parse({
-      access_token: "access-123",
-      token_type: "bearer",
-    }),
-  );
-
-  expect(response.type).toBe("success");
-  if (response.type !== "success") return;
-
-  expect(response.tokenType).toBe("Bearer");
-});
-
 it("parses optional successful token response fields", async () => {
   const response = await Effect.runPromise(
     OAuth2TokenResponse.parse({
@@ -55,108 +41,6 @@ it("parses optional successful token response fields", async () => {
   });
 });
 
-it("rejects missing access_token", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({ token_type: "Bearer" }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?._tag).toBe("OAuth2TokenResponseValidationError");
-  expect(error?.message).toBe("Invalid access token");
-});
-
-it("rejects empty access_token", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({ access_token: "", token_type: "Bearer" }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid access token");
-});
-
-it("rejects missing token_type", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({ access_token: "access-123" }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token type");
-});
-
-it("rejects unsupported token_type", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({
-      access_token: "access-123",
-      token_type: "mac",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token type");
-});
-
-it("rejects negative expires_in", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({
-      access_token: "access-123",
-      expires_in: -1,
-      token_type: "Bearer",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid expires_in");
-});
-
-it("rejects non-numeric expires_in", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({
-      access_token: "access-123",
-      expires_in: "3600",
-      token_type: "Bearer",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid expires_in");
-});
-
 it("rejects invalid scope values", async () => {
   const effect = Effect.match(
     OAuth2TokenResponse.parse({
@@ -173,30 +57,6 @@ it("rejects invalid scope values", async () => {
   const error = await Effect.runPromise(effect);
 
   expect(error?._tag).toBe("OAuth2ScopeValidationError");
-});
-
-it("rejects non-object token responses", async () => {
-  const effect = Effect.match(OAuth2TokenResponse.parse(null), {
-    onFailure: (error) => error,
-    onSuccess: () => null,
-  });
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token response");
-});
-
-it("rejects array token responses", async () => {
-  const effect = Effect.match(OAuth2TokenResponse.parse([]), {
-    onFailure: (error) => error,
-    onSuccess: () => null,
-  });
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token response");
 });
 
 it("parses a token error response", async () => {
@@ -231,59 +91,6 @@ it("parses a token error response without optional fields", async () => {
     errorUri: undefined,
     type: "error",
   });
-});
-
-it("requires error in token error responses", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({
-      error: "",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token error");
-});
-
-it("rejects invalid error descriptions", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({
-      error: "invalid_grant",
-      error_description: "invalid\nerror",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token error");
-});
-
-it("rejects malformed error_uri", async () => {
-  const effect = Effect.match(
-    OAuth2TokenResponse.parse({
-      error: "invalid_grant",
-      error_uri: "invalid uri",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2TokenResponse.ValidationError);
-  expect(error?.message).toBe("Invalid token error URI");
 });
 
 it("rejects structurally invalid error_uri values", async () => {

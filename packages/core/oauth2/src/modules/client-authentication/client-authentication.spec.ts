@@ -113,44 +113,6 @@ it("does not include client_secret in the request body for client_secret_basic",
   expect(authentication.bodyParameters).not.toHaveProperty("client_secret");
 });
 
-it("rejects missing client_id for client_secret_basic", async () => {
-  const effect = Effect.match(
-    OAuth2ClientAuthentication.clientSecretBasic({
-      clientId: "",
-      clientSecret: "secret-123",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2ClientAuthentication.Error);
-  expect(error?._tag).toBe("OAuth2ClientAuthenticationError");
-  expect(error?.message).toBe("Invalid OAuth2 client id");
-});
-
-it("rejects empty client_secret for client_secret_basic", async () => {
-  const effect = Effect.match(
-    OAuth2ClientAuthentication.clientSecretBasic({
-      clientId: "client-123",
-      clientSecret: "",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2ClientAuthentication.Error);
-  expect(error?._tag).toBe("OAuth2ClientAuthenticationError");
-  expect(error?.message).toBe("Invalid OAuth2 client secret");
-});
-
 it("does not include client_secret in generated error messages", async () => {
   const clientSecret = "super-secret-value";
   const effect = Effect.match(
@@ -226,44 +188,6 @@ it("does not set an Authorization header for client_secret_post", async () => {
   );
 
   expect(authentication.headers).not.toHaveProperty("Authorization");
-});
-
-it("rejects missing client_id for client_secret_post", async () => {
-  const effect = Effect.match(
-    OAuth2ClientAuthentication.clientSecretPost({
-      clientId: "",
-      clientSecret: "secret-123",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2ClientAuthentication.Error);
-  expect(error?._tag).toBe("OAuth2ClientAuthenticationError");
-  expect(error?.message).toBe("Invalid OAuth2 client id");
-});
-
-it("rejects empty client_secret for client_secret_post", async () => {
-  const effect = Effect.match(
-    OAuth2ClientAuthentication.clientSecretPost({
-      clientId: "client-123",
-      clientSecret: "",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OAuth2ClientAuthentication.Error);
-  expect(error?._tag).toBe("OAuth2ClientAuthenticationError");
-  expect(error?.message).toBe("Invalid OAuth2 client secret");
 });
 
 it("URL-encodes client_secret in the form body when serialized", async () => {

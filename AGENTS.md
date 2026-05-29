@@ -9,10 +9,10 @@
 ## Changeset
 
 - This repo uses changesets cli
-- Create a changeset entry to cover affected projects
+- Check after each task if a changeset entry for the affected projects needs to be created or updated
 - Private projects are just not published, but can be affected
 
 ## Commit message
 
-- After a task create conventional commit message
+- After each task create conventional commit message
 - Use no scope, or one of the available scopes in the .vscode settings

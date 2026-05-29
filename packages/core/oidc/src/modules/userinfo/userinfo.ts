@@ -1,11 +1,14 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import { OIDCUserInfoValidationError } from "./userinfo.errors";
+import { Helper } from "./userinfo.helper";
 
 /**
  * Parses OpenID Connect UserInfo responses.
  */
 export class OIDCUserInfo {
+  private static Helper = Helper;
+
   /**
    * Error returned when a UserInfo response is invalid.
    */
@@ -16,30 +19,10 @@ export class OIDCUserInfo {
    */
   static parse(input: unknown) {
     return Effect.gen(function* () {
-      const response = yield* OIDCUserInfo.parseRecord(input);
-      const sub = yield* Effect.mapError(
-        Schema.decodeUnknown(Schema.NonEmptyString)(response.sub),
-        () =>
-          new OIDCUserInfoValidationError({
-            message: "Invalid UserInfo subject",
-          }),
-      );
+      const response = yield* OIDCUserInfo.Helper.parseRecord(input);
+      const sub = yield* OIDCUserInfo.Helper.parseSubject(response.sub);
 
       return { ...response, sub };
-    });
-  }
-
-  private static parseRecord(input: unknown) {
-    return Effect.gen(function* () {
-      if (typeof input !== "object" || input === null || Array.isArray(input)) {
-        return yield* Effect.fail(
-          new OIDCUserInfoValidationError({
-            message: "Invalid UserInfo response",
-          }),
-        );
-      }
-
-      return input as Readonly<Record<string, unknown>>;
     });
   }
 }

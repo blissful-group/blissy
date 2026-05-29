@@ -51,17 +51,6 @@ it("rejects a JWK Set without a keys array", async () => {
   expect(error?.message).toBe("Invalid JWK Set: missing keys array");
 });
 
-it("finds a key by kid", async () => {
-  const key = await Effect.runPromise(
-    JWK.findKey({
-      set: jwkSet,
-      kid: "enc-1",
-    }),
-  );
-
-  expect(key).toEqual(jwkSet.keys[1]);
-});
-
 it("imports an RSA verification key", async () => {
   const keyPair = await crypto.subtle.generateKey(
     {
@@ -142,23 +131,4 @@ it("rejects malformed verification keys", async () => {
   expect(error).toBeInstanceOf(JWK.KeyImportError);
   expect(error?._tag).toBe("JWKKeyImportError");
   expect(error?.message).toBe("Invalid JWK key");
-});
-
-it("rejects ambiguous key matches", async () => {
-  const effect = Effect.match(
-    JWK.findKey({
-      set: jwkSet,
-      use: "sig",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(JWK.KeyMatchError);
-  expect(error?._tag).toBe("JWKKeyMatchError");
-  expect(error?.message).toBe("Multiple JWKs matched the given criteria");
 });

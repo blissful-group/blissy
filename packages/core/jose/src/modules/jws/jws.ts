@@ -3,14 +3,16 @@ import { Effect } from "effect";
 import { Base64 } from "../../utils/base64";
 import { JWA } from "../jwa/jwa";
 import type { JWAKey } from "../jwa/jwa.types";
-import { SUPPORTED_CRITICAL_HEADERS } from "./jws.constants";
 import { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
+import { Helper } from "./jws.helper";
 import type { JWSHeader, JWSHeaderValue } from "./jws.types";
 
 /**
  * Creates and verifies JSON Web Signatures using base64url encoding.
  */
 export class JWS {
+  private static Helper = Helper;
+
   static CriticalHeaderError = JWSCriticalHeaderError;
   static VerificationError = JWSVerificationError;
 
@@ -27,7 +29,7 @@ export class JWS {
     header?: Record<string, JWSHeaderValue>;
   }) {
     return Effect.gen(function* () {
-      const entry = yield* JWS.createSignatureEntry(input);
+      const entry = yield* JWS.Helper.createSignatureEntry(input);
 
       return `${entry.protected}.${entry.payload}.${entry.signature}`;
     });
@@ -54,7 +56,7 @@ export class JWS {
         JWS.decoder.decode(protectedHeaderBytes),
       ) as JWSHeader;
 
-      yield* JWS.validateCrit(protectedHeader);
+      yield* JWS.Helper.validateCrit(protectedHeader);
 
       const signature = yield* Base64.decode(signatureSegment!);
       const valid = yield* JWA.verify({
@@ -89,7 +91,7 @@ export class JWS {
     header?: Record<string, JWSHeaderValue>;
   }) {
     return Effect.gen(function* () {
-      const entry = yield* JWS.createSignatureEntry(input);
+      const entry = yield* JWS.Helper.createSignatureEntry(input);
 
       return {
         header: entry.header,
@@ -143,52 +145,6 @@ export class JWS {
       return {
         payload: payloadSegment,
         signatures: serializedSignatures,
-      };
-    });
-  }
-
-  private static validateCrit(protectedHeader: JWSHeader) {
-    return Effect.gen(function* () {
-      for (const criticalHeader of protectedHeader.crit ?? []) {
-        if (!SUPPORTED_CRITICAL_HEADERS.has(criticalHeader)) {
-          return yield* Effect.fail(
-            new JWSCriticalHeaderError({
-              message: `Unknown critical header parameter: "${criticalHeader}"`,
-            }),
-          );
-        }
-      }
-    });
-  }
-
-  private static createSignatureEntry({
-    header,
-    key,
-    payload,
-    protectedHeader,
-  }: {
-    key: JWAKey;
-    payload: Uint8Array;
-    protectedHeader: JWSHeader;
-    header?: Record<string, JWSHeaderValue>;
-  }) {
-    return Effect.gen(function* () {
-      const protectedSegment = yield* Base64.encode(
-        JWS.encoder.encode(JSON.stringify(protectedHeader)),
-      );
-      const payloadSegment = yield* Base64.encode(payload);
-      const signatureBytes = yield* JWA.sign({
-        alg: protectedHeader.alg,
-        key,
-        payload: JWS.encoder.encode(`${protectedSegment}.${payloadSegment}`),
-      });
-      const signature = yield* Base64.encode(signatureBytes);
-
-      return {
-        header,
-        payload: payloadSegment,
-        protected: protectedSegment,
-        signature,
       };
     });
   }

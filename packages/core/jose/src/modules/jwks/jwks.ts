@@ -1,7 +1,8 @@
 import { Effect, Schema } from "effect";
 
-import { Filters } from "../../utils/filters";
+import type { Filters } from "../../utils/filters";
 import { JWKSKeyMatchError, JWKSParseError } from "./jwks.errors";
+import { Helper } from "./jwks.helper";
 import { JWKSSetSchema } from "./jwks.schema";
 import type { JWKSKey, JWKSSet, JWKSValue } from "./jwks.types";
 
@@ -9,6 +10,8 @@ import type { JWKSKey, JWKSSet, JWKSValue } from "./jwks.types";
  * Parses JWKS documents and selects matching keys.
  */
 export class JWKS {
+  private static Helper = Helper;
+
   static KeyMatchError = JWKSKeyMatchError;
   static ParseError = JWKSParseError;
 
@@ -31,17 +34,8 @@ export class JWKS {
   static findKey({ set, ...args }: Filters.Input & { set: JWKSSet }) {
     return Effect.gen(function* () {
       const parsedSet = yield* JWKS.parse(set);
-      const matches = parsedSet.keys.filter(Filters.keys(args));
 
-      if (matches.length > 1) {
-        const error = new JWKSKeyMatchError({
-          message: "Multiple JWKS keys matched the given criteria",
-        });
-
-        return yield* Effect.fail(error);
-      }
-
-      return matches[0];
+      return yield* JWKS.Helper.findSingleMatch({ args, keys: parsedSet.keys });
     });
   }
 }

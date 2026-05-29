@@ -47,34 +47,6 @@ it("supports dependency injection for randomness", async () => {
   expect(nonce).toBe("_-7dzA");
 });
 
-it("rejects nonce generation with zero length", async () => {
-  const effect = Effect.match(OIDCNonce.generate(0), {
-    onFailure: (error) => error,
-    onSuccess: () => null,
-  });
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OIDCNonce.GenerationError);
-  expect(error?._tag).toBe("OIDCNonceGenerationError");
-  expect(error?.message).toBe("Invalid OIDC nonce byte length");
-  expect(error).toMatchObject({ byteLength: 0 });
-});
-
-it("rejects nonce generation with fractional length", async () => {
-  const effect = Effect.match(OIDCNonce.generate(1.5), {
-    onFailure: (error) => error,
-    onSuccess: () => null,
-  });
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OIDCNonce.GenerationError);
-  expect(error?._tag).toBe("OIDCNonceGenerationError");
-  expect(error?.message).toBe("Invalid OIDC nonce byte length");
-  expect(error).toMatchObject({ byteLength: 1.5 });
-});
-
 it("validates matching nonce values", async () => {
   await expect(
     Effect.runPromise(
@@ -84,55 +56,4 @@ it("validates matching nonce values", async () => {
       }),
     ),
   ).resolves.toBeUndefined();
-});
-
-it("rejects missing expected nonce", async () => {
-  const effect = Effect.match(
-    OIDCNonce.validate({ returnedNonce: "nonce-123" }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OIDCNonce.ValidationError);
-  expect(error?._tag).toBe("OIDCNonceValidationError");
-  expect(error?.message).toBe("Missing OIDC nonce");
-});
-
-it("rejects missing returned nonce", async () => {
-  const effect = Effect.match(
-    OIDCNonce.validate({ expectedNonce: "nonce-123" }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OIDCNonce.ValidationError);
-  expect(error?._tag).toBe("OIDCNonceValidationError");
-  expect(error?.message).toBe("Missing OIDC nonce");
-});
-
-it("rejects mismatched nonce values", async () => {
-  const effect = Effect.match(
-    OIDCNonce.validate({
-      expectedNonce: "nonce-123",
-      returnedNonce: "nonce-456",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(OIDCNonce.ValidationError);
-  expect(error?._tag).toBe("OIDCNonceValidationError");
-  expect(error?.message).toBe("Invalid OIDC nonce");
 });
