@@ -22,8 +22,8 @@ The packages in this repository aim to keep dependencies intentionally small.
 
 ## Packages
 
-- [`@blissy-auth/jose`](./packages/jose/README.md): JOSE primitives for `JWA`, `JWE`, `JWK`, `JWKS`, `JWS`, and `JWT`
-- [`@blissy-auth/oauth2`](./packages/oauth2/README.md): OAuth 2.0 primitives for authorization requests, authorization responses, PKCE, state, scopes, client authentication, token requests, and token responses
+- [`@blissy-auth/jose`](./packages/core/jose/README.md): JOSE primitives for `JWA`, `JWE`, `JWK`, `JWKS`, `JWS`, and `JWT`
+- [`@blissy-auth/oauth2`](./packages/core/oauth2/README.md): OAuth 2.0 primitives for authorization requests, authorization responses, PKCE, state, scopes, client authentication, token requests, and token responses
 
 ## Getting Started
 

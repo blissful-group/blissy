@@ -1,6 +1,6 @@
-[Back to root](https://github.com/blissful-group/blissy/blob/main/README.md)
+[Back to root](https://github.com/blissful-group/blissy)
 
-# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/oidc](https://github.com/blissful-group/blissy/blob/main/packages/oidc/README.md)
+# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/oidc](https://github.com/blissful-group/blissy/blob/main/packages/core/oidc)
 
 ![NPM License](https://img.shields.io/npm/l/@blissy-auth/oidc)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/@blissy-auth/oidc)
@@ -46,7 +46,7 @@ npm install @blissy-auth/oidc effect
 
 Node.js versions with Web Crypto support work out of the box.
 
-OIDC uses the workspace crypto service indirectly through OAuth2, JOSE, and nonce generation. See [`@blissy-auth/crypto`](../../services/crypto/README.md) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
+OIDC uses the workspace crypto service indirectly through OAuth2, JOSE, and nonce generation. See [`@blissy-auth/crypto`](https://github.com/blissful-group/blissy/tree/main/services/crypto) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
 
 ## Current Support
 

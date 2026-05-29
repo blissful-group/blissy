@@ -1,6 +1,6 @@
-[Back to root](https://github.com/blissful-group/blissy/blob/main/README.md)
+[Back to root](https://github.com/blissful-group/blissy)
 
-# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/oauth2](https://github.com/blissful-group/blissy/blob/main/packages/oauth2/README.md)
+# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/oauth2](https://github.com/blissful-group/blissy/blob/main/packages/core/oauth2)
 
 ![NPM License](https://img.shields.io/npm/l/@blissy-auth/oauth2)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/@blissy-auth/oauth2)
@@ -48,7 +48,7 @@ npm install @blissy-auth/oauth2 effect
 
 Node.js versions with Web Crypto support work out of the box.
 
-OAuth2 uses the workspace crypto service internally for PKCE and state generation. See [`@blissy-auth/crypto`](../../services/crypto/README.md) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
+OAuth2 uses the workspace crypto service internally for PKCE and state generation. See [`@blissy-auth/crypto`](https://github.com/blissful-group/blissy/tree/main/services/crypto) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
 
 ## Current Support
 
