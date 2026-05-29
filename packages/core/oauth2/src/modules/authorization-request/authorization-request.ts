@@ -1,14 +1,16 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import { OAuth2PKCE } from "../pkce/pkce";
 import { OAuth2Scope } from "../scope/scope";
 import { AuthorizationRequestValidationError } from "./authorization-request.errors";
-import { AuthorizationRequestReservedParameterSchema } from "./authorization-request.schema";
+import { Helper } from "./authorization-request.helper";
 
 /**
  * Builds OAuth 2.0 authorization endpoint request URLs.
  */
 export class OAuth2AuthorizationRequest {
+  private static Helper = Helper;
+
   /**
    * Error returned when an authorization request input is invalid.
    */
@@ -37,17 +39,17 @@ export class OAuth2AuthorizationRequest {
     parameters?: Readonly<Record<string, string>>;
   }) {
     return Effect.gen(function* () {
-      const url = yield* OAuth2AuthorizationRequest.parseUrl(
+      const url = yield* OAuth2AuthorizationRequest.Helper.parseUrl(
         authorizationEndpoint,
         "Invalid authorization endpoint",
       );
 
-      yield* OAuth2AuthorizationRequest.validateNonEmpty(
+      yield* OAuth2AuthorizationRequest.Helper.validateNonEmpty(
         clientId,
         "Invalid client id",
       );
 
-      yield* OAuth2AuthorizationRequest.parseUrl(
+      yield* OAuth2AuthorizationRequest.Helper.parseUrl(
         redirectUri,
         "Invalid redirect uri",
       );
@@ -77,40 +79,14 @@ export class OAuth2AuthorizationRequest {
       }
 
       for (const [parameter, value] of Object.entries(parameters ?? {})) {
-        if (OAuth2AuthorizationRequest.isReservedParameter(parameter)) {
-          const error = new AuthorizationRequestValidationError({
-            message: "Invalid authorization request parameter",
-            parameter,
-          });
-
-          return yield* Effect.fail(error);
-        }
+        yield* OAuth2AuthorizationRequest.Helper.validateExtensionParameter(
+          parameter,
+        );
 
         url.searchParams.set(parameter, value);
       }
 
       return url;
     });
-  }
-
-  private static parseUrl(
-    value: string,
-    message: "Invalid authorization endpoint" | "Invalid redirect uri",
-  ) {
-    return Effect.mapError(
-      Schema.decodeUnknown(Schema.URL)(value),
-      () => new AuthorizationRequestValidationError({ message }),
-    );
-  }
-
-  private static validateNonEmpty(value: string, message: "Invalid client id") {
-    return Effect.mapError(
-      Schema.decodeUnknown(Schema.NonEmptyString)(value),
-      () => new AuthorizationRequestValidationError({ message }),
-    );
-  }
-
-  private static isReservedParameter(value: string) {
-    return Schema.is(AuthorizationRequestReservedParameterSchema)(value);
   }
 }

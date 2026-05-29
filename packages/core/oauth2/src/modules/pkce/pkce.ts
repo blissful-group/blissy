@@ -2,18 +2,14 @@ import {
   AlgorithmReference,
   CryptoReference,
 } from "@blissy-auth/crypto/source";
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import {
   CodeChallengeMethodError,
   CodeChallengeVerificationError,
   CodeVerifierValidationError,
 } from "./pkce.errors";
-import {
-  CodeChallengeMethodSchema,
-  CodeVerifierCharactersSchema,
-  CodeVerifierLengthSchema,
-} from "./pkce.schema";
+import { Helper } from "./pkce.helper";
 import type {
   OAuth2PKCECodeChallengeMethod,
   OAuth2PKCECodeVerifierGenerationOptions,
@@ -23,6 +19,8 @@ import type {
  * Validates PKCE code verifiers and derives PKCE code challenges.
  */
 export class OAuth2PKCE {
+  private static Helper = Helper;
+
   /**
    * Error returned when a code challenge does not match its verifier.
    */
@@ -50,7 +48,7 @@ export class OAuth2PKCE {
       const crypto = yield* CryptoReference;
       const bytes = new Uint8Array(byteLength);
       crypto.randomValues(bytes);
-      const codeVerifier = OAuth2PKCE.encodeBase64Url(bytes);
+      const codeVerifier = OAuth2PKCE.Helper.encodeBase64Url(bytes);
 
       yield* OAuth2PKCE.validateCodeVerifier(codeVerifier);
 
@@ -63,21 +61,8 @@ export class OAuth2PKCE {
    */
   static validateCodeVerifier(codeVerifier: string) {
     return Effect.gen(function* () {
-      yield* Effect.mapError(
-        Schema.decodeUnknown(CodeVerifierLengthSchema)(codeVerifier),
-        () =>
-          new CodeVerifierValidationError({
-            message: "Invalid PKCE code verifier length",
-          }),
-      );
-
-      yield* Effect.mapError(
-        Schema.decodeUnknown(CodeVerifierCharactersSchema)(codeVerifier),
-        () =>
-          new CodeVerifierValidationError({
-            message: "Invalid PKCE code verifier characters",
-          }),
-      );
+      yield* OAuth2PKCE.Helper.validateCodeVerifierLength(codeVerifier);
+      yield* OAuth2PKCE.Helper.validateCodeVerifierCharacters(codeVerifier);
     });
   }
 
@@ -94,14 +79,7 @@ export class OAuth2PKCE {
     return Effect.gen(function* () {
       yield* OAuth2PKCE.validateCodeVerifier(codeVerifier);
 
-      if (!Schema.is(CodeChallengeMethodSchema)(method)) {
-        const error = new CodeChallengeMethodError({
-          message: "Unsupported PKCE code challenge method",
-          method,
-        });
-
-        return yield* Effect.fail(error);
-      }
+      yield* OAuth2PKCE.Helper.validateCodeChallengeMethod(method);
 
       if (method === "plain") {
         return codeVerifier;
@@ -116,7 +94,7 @@ export class OAuth2PKCE {
         ),
       );
 
-      return OAuth2PKCE.encodeBase64Url(new Uint8Array(hash));
+      return OAuth2PKCE.Helper.encodeBase64Url(new Uint8Array(hash));
     });
   }
 
@@ -147,19 +125,6 @@ export class OAuth2PKCE {
         return yield* Effect.fail(error);
       }
     });
-  }
-
-  private static encodeBase64Url(bytes: Uint8Array) {
-    let output = "";
-
-    for (const byte of bytes) {
-      output += String.fromCharCode(byte);
-    }
-
-    return btoa(output)
-      .replaceAll("+", "-")
-      .replaceAll("/", "_")
-      .replaceAll("=", "");
   }
 }
 

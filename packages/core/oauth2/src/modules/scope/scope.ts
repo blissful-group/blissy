@@ -1,13 +1,15 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import { OAuth2ScopeValidationError } from "./scope.errors";
-import { ScopeValueSchema } from "./scope.schema";
+import { Helper } from "./scope.helper";
 import type { OAuth2ScopeSet, OAuth2ScopeValue } from "./scope.types";
 
 /**
  * Parses, formats, and compares OAuth 2.0 scope values.
  */
 export class OAuth2Scope {
+  private static Helper = Helper;
+
   /**
    * Error returned when a scope value is invalid.
    */
@@ -26,9 +28,9 @@ export class OAuth2Scope {
 
       const scopes = trimmed.split(/\s+/u);
 
-      yield* OAuth2Scope.validateAll(scopes);
+      yield* OAuth2Scope.Helper.validateAll(scopes);
 
-      return OAuth2Scope.unique(scopes);
+      return OAuth2Scope.Helper.unique(scopes);
     });
   }
 
@@ -37,9 +39,9 @@ export class OAuth2Scope {
    */
   static format(scopes: OAuth2ScopeSet) {
     return Effect.gen(function* () {
-      yield* OAuth2Scope.validateAll(scopes);
+      yield* OAuth2Scope.Helper.validateAll(scopes);
 
-      return OAuth2Scope.unique(scopes).join(" ");
+      return OAuth2Scope.Helper.unique(scopes).join(" ");
     });
   }
 
@@ -48,10 +50,10 @@ export class OAuth2Scope {
    */
   static includes(scopes: OAuth2ScopeSet, requiredScope: OAuth2ScopeValue) {
     return Effect.gen(function* () {
-      yield* OAuth2Scope.validateAll(scopes);
-      yield* OAuth2Scope.validate(requiredScope);
+      yield* OAuth2Scope.Helper.validateAll(scopes);
+      yield* OAuth2Scope.Helper.validate(requiredScope);
 
-      return OAuth2Scope.unique(scopes).includes(requiredScope);
+      return OAuth2Scope.Helper.unique(scopes).includes(requiredScope);
     });
   }
 
@@ -60,12 +62,12 @@ export class OAuth2Scope {
    */
   static includesAll(scopes: OAuth2ScopeSet, requiredScopes: OAuth2ScopeSet) {
     return Effect.gen(function* () {
-      yield* OAuth2Scope.validateAll(scopes);
-      yield* OAuth2Scope.validateAll(requiredScopes);
+      yield* OAuth2Scope.Helper.validateAll(scopes);
+      yield* OAuth2Scope.Helper.validateAll(requiredScopes);
 
-      const uniqueScopes = OAuth2Scope.unique(scopes);
+      const uniqueScopes = OAuth2Scope.Helper.unique(scopes);
 
-      return OAuth2Scope.unique(requiredScopes).every((requiredScope) =>
+      return OAuth2Scope.Helper.unique(requiredScopes).every((requiredScope) =>
         uniqueScopes.includes(requiredScope),
       );
     });
@@ -76,12 +78,12 @@ export class OAuth2Scope {
    */
   static includesAny(scopes: OAuth2ScopeSet, allowedScopes: OAuth2ScopeSet) {
     return Effect.gen(function* () {
-      yield* OAuth2Scope.validateAll(scopes);
-      yield* OAuth2Scope.validateAll(allowedScopes);
+      yield* OAuth2Scope.Helper.validateAll(scopes);
+      yield* OAuth2Scope.Helper.validateAll(allowedScopes);
 
-      const uniqueScopes = OAuth2Scope.unique(scopes);
+      const uniqueScopes = OAuth2Scope.Helper.unique(scopes);
 
-      return OAuth2Scope.unique(allowedScopes).some((allowedScope) =>
+      return OAuth2Scope.Helper.unique(allowedScopes).some((allowedScope) =>
         uniqueScopes.includes(allowedScope),
       );
     });
@@ -92,38 +94,15 @@ export class OAuth2Scope {
    */
   static missing(scopes: OAuth2ScopeSet, requiredScopes: OAuth2ScopeSet) {
     return Effect.gen(function* () {
-      yield* OAuth2Scope.validateAll(scopes);
-      yield* OAuth2Scope.validateAll(requiredScopes);
+      yield* OAuth2Scope.Helper.validateAll(scopes);
+      yield* OAuth2Scope.Helper.validateAll(requiredScopes);
 
-      const uniqueScopes = OAuth2Scope.unique(scopes);
+      const uniqueScopes = OAuth2Scope.Helper.unique(scopes);
 
-      return OAuth2Scope.unique(requiredScopes).filter(
+      return OAuth2Scope.Helper.unique(requiredScopes).filter(
         (requiredScope) => !uniqueScopes.includes(requiredScope),
       );
     });
-  }
-
-  private static validate(scope: OAuth2ScopeValue) {
-    return Effect.mapError(
-      Schema.decodeUnknown(ScopeValueSchema)(scope),
-      () =>
-        new OAuth2ScopeValidationError({
-          message: "Invalid OAuth2 scope",
-          scope,
-        }),
-    );
-  }
-
-  private static validateAll(scopes: OAuth2ScopeSet) {
-    return Effect.gen(function* () {
-      for (const scope of scopes) {
-        yield* OAuth2Scope.validate(scope);
-      }
-    });
-  }
-
-  private static unique(scopes: OAuth2ScopeSet) {
-    return [...new Set(scopes)];
   }
 }
 
