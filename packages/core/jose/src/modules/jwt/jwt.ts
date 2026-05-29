@@ -2,7 +2,6 @@ import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
 import type { JWAKey } from "../jwa/jwa.types";
-import { JWK } from "../jwk/jwk";
 import type { JWKSet } from "../jwk/jwk.types";
 import { JWS } from "../jws/jws";
 import {
@@ -10,6 +9,7 @@ import {
   JWTDecodeError,
   JWTVerificationError,
 } from "./jwt.errors";
+import { Helper } from "./jwt.helper";
 import type {
   JWTAlgorithm,
   JWTClaims,
@@ -21,6 +21,8 @@ import type {
  * Signs, verifies, and decodes JSON Web Tokens.
  */
 export class JWT {
+  private static Helper = Helper;
+
   static ClaimValidationError = JWTClaimValidationError;
   static DecodeError = JWTDecodeError;
   static VerificationError = JWTVerificationError;
@@ -86,7 +88,7 @@ export class JWT {
           return yield* Effect.fail(error);
         }
       } else {
-        const verificationKey = yield* JWT.resolveVerificationKey({
+        const verificationKey = yield* JWT.Helper.resolveVerificationKey({
           header: decoded.header,
           jwks,
           key,
@@ -117,14 +119,13 @@ export class JWT {
         }
       }
 
-      yield* JWT.validateClaims({
-        audience,
-        claims: decoded.claims,
-        clockTolerance,
-        issuer,
-        now,
-        subject,
-      });
+      const { claims } = decoded;
+      yield* Helper.validateIssuer({ claims, issuer });
+      yield* Helper.validateSubject({ claims, subject });
+      yield* Helper.validateAudience({ claims, audience });
+      yield* Helper.validateExpiration({ claims, clockTolerance, now });
+      yield* Helper.validateNotBefore({ claims, clockTolerance, now });
+      yield* Helper.validateIssuedAt({ claims, clockTolerance, now });
 
       return decoded;
     });
@@ -158,104 +159,6 @@ export class JWT {
 
         return yield* Effect.fail(error);
       }
-    });
-  }
-
-  private static validateClaims({
-    audience,
-    claims,
-    clockTolerance,
-    issuer,
-    now,
-    subject,
-  }: {
-    claims: JWTClaims;
-    issuer?: string;
-    subject?: string;
-    audience?: string;
-    now: number;
-    clockTolerance: number;
-  }) {
-    return Effect.gen(function* () {
-      if (issuer !== undefined && claims.iss !== issuer) {
-        const error = new JWTClaimValidationError({
-          message: 'Invalid JWT claim "iss"',
-        });
-
-        return yield* Effect.fail(error);
-      }
-
-      if (subject !== undefined && claims.sub !== subject) {
-        const error = new JWTClaimValidationError({
-          message: 'Invalid JWT claim "sub"',
-        });
-
-        return yield* Effect.fail(error);
-      }
-
-      if (audience !== undefined) {
-        const validAudience =
-          claims.aud === audience ||
-          (Array.isArray(claims.aud) && claims.aud.includes(audience));
-
-        if (!validAudience) {
-          const error = new JWTClaimValidationError({
-            message: 'Invalid JWT claim "aud"',
-          });
-
-          return yield* Effect.fail(error);
-        }
-      }
-
-      if (claims.exp !== undefined && now > claims.exp + clockTolerance) {
-        const error = new JWTClaimValidationError({
-          message: 'Invalid JWT claim "exp"',
-        });
-
-        return yield* Effect.fail(error);
-      }
-
-      if (claims.nbf !== undefined && now < claims.nbf - clockTolerance) {
-        const error = new JWTClaimValidationError({
-          message: 'Invalid JWT claim "nbf"',
-        });
-
-        return yield* Effect.fail(error);
-      }
-
-      if (claims.iat !== undefined && now < claims.iat - clockTolerance) {
-        const error = new JWTClaimValidationError({
-          message: 'Invalid JWT claim "iat"',
-        });
-
-        return yield* Effect.fail(error);
-      }
-    });
-  }
-
-  private static resolveVerificationKey({
-    header,
-    jwks,
-    key,
-  }: {
-    header: JWTHeader;
-    key?: JWAKey;
-    jwks?: JWKSet;
-  }) {
-    return Effect.gen(function* () {
-      if (key !== undefined) return key;
-      if (jwks === undefined) return undefined;
-
-      const jwk = yield* JWK.findKey({
-        alg: header.alg,
-        kid: typeof header.kid === "string" ? header.kid : undefined,
-        set: jwks,
-        use: "sig",
-      });
-
-      if (jwk === undefined) return undefined;
-
-      return yield* JWK.importVerificationKey(jwk);
     });
   }
 }

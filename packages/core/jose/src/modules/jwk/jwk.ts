@@ -4,12 +4,13 @@ import {
 } from "@blissy-auth/crypto/source";
 import { Effect, Schema } from "effect";
 
-import { Filters } from "../../utils/filters";
+import type { Filters } from "../../utils/filters";
 import {
   JWKKeyImportError,
   JWKKeyMatchError,
   JWKSetParseError,
 } from "./jwk.errors";
+import { Helper } from "./jwk.helper";
 import { JWKSetSchema } from "./jwk.schema";
 import type { JWKKey, JWKSet, JWKValue } from "./jwk.types";
 
@@ -23,6 +24,8 @@ export {
  * Parses JWK Sets and selects matching keys.
  */
 export class JWK {
+  private static Helper = Helper;
+
   static KeyMatchError = JWKKeyMatchError;
   static KeyImportError = JWKKeyImportError;
   static SetParseError = JWKSetParseError;
@@ -46,17 +49,8 @@ export class JWK {
   static findKey({ set, ...args }: Filters.Input & { set: JWKSet }) {
     return Effect.gen(function* () {
       const parsedSet = yield* JWK.parseSet(set);
-      const matches = parsedSet.keys.filter(Filters.keys(args));
 
-      if (matches.length > 1) {
-        return yield* Effect.fail(
-          new JWKKeyMatchError({
-            message: "Multiple JWKs matched the given criteria",
-          }),
-        );
-      }
-
-      return matches[0];
+      return yield* JWK.Helper.findSingleMatch({ args, keys: parsedSet.keys });
     });
   }
 
@@ -66,7 +60,7 @@ export class JWK {
   static importVerificationKey(key: JWKKey) {
     return Effect.gen(function* () {
       const algorithms = yield* AlgorithmReference;
-      const algorithm = JWK.getAlgorithm(key, algorithms);
+      const algorithm = JWK.Helper.getAlgorithm(key, algorithms);
 
       if (algorithm === undefined) {
         return yield* Effect.fail(
@@ -84,19 +78,6 @@ export class JWK {
           ]),
       });
     });
-  }
-
-  private static getAlgorithm(
-    key: JWKKey,
-    algorithms: AlgorithmReference.Service,
-  ) {
-    if (key.kty === "RSA") {
-      return algorithms.jwa[AlgorithmReference.RS256].importKey;
-    }
-
-    if (key.kty === "EC" && key.crv === "P-256") {
-      return algorithms.jwa[AlgorithmReference.ES256].importKey;
-    }
   }
 }
 
