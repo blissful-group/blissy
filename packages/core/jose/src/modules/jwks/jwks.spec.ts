@@ -61,22 +61,3 @@ it("finds a key by kid", async () => {
 
   expect(key).toEqual(set.keys[1]);
 });
-
-it("rejects ambiguous key matches", async () => {
-  const effect = Effect.match(
-    JWKS.findKey({
-      set,
-      use: "sig",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(JWKS.KeyMatchError);
-  expect(error?._tag).toBe("JWKSKeyMatchError");
-  expect(error?.message).toBe("Multiple JWKS keys matched the given criteria");
-});

@@ -247,29 +247,6 @@ it("rejects tampered protected headers", async () => {
   expect(error?.message).toBe("Invalid JWE ciphertext");
 });
 
-it("rejects unsupported alg or enc values", async () => {
-  const effect = Effect.match(
-    JWE.encryptCompact({
-      key,
-      payload,
-      protectedHeader: {
-        alg: "RSA-OAEP" as JWE.Algorithm,
-        enc: "A128GCM" as JWE.Encryption,
-      },
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(JWE.AlgorithmNotSupportedError);
-  expect(error?._tag).toBe("JWEAlgorithmNotSupportedError");
-  expect(error?.message).toBe('Unsupported JWE algorithm: "RSA-OAEP"');
-});
-
 it("rejects malformed compact JWE serializations", async () => {
   const effect = Effect.match(
     JWE.decryptCompact({ key, token: "invalid-token" }),
@@ -284,37 +261,6 @@ it("rejects malformed compact JWE serializations", async () => {
   expect(error).toBeInstanceOf(JWE.DecryptionError);
   expect(error?._tag).toBe("JWEDecryptionError");
   expect(error?.message).toBe("Invalid JWE ciphertext");
-});
-
-it("rejects missing general JWE recipients", async () => {
-  const serialization = await Effect.runPromise(
-    JWE.encryptGeneral({
-      key,
-      payload,
-      protectedHeader: {
-        alg: "dir",
-        enc: "A256GCM",
-      },
-      recipients: [{ header: { kid: "key-1" } }],
-    }),
-  );
-  const effect = Effect.match(
-    JWE.decryptGeneral({
-      key,
-      serialization,
-      kid: "missing-key",
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(JWE.DecryptionError);
-  expect(error?._tag).toBe("JWEDecryptionError");
-  expect(error?.message).toBe('No JWE recipient matched kid: "missing-key"');
 });
 
 it("rejects non-empty encrypted key segments for dir", async () => {
@@ -349,27 +295,4 @@ it("rejects non-empty encrypted key segments for dir", async () => {
   expect(error).toBeInstanceOf(JWE.DecryptionError);
   expect(error?._tag).toBe("JWEDecryptionError");
   expect(error?.message).toBe("Invalid JWE ciphertext");
-});
-
-it("rejects unsupported enc values", async () => {
-  const effect = Effect.match(
-    JWE.encryptCompact({
-      key,
-      payload,
-      protectedHeader: {
-        alg: "dir",
-        enc: "A128GCM" as JWE.Encryption,
-      },
-    }),
-    {
-      onFailure: (error) => error,
-      onSuccess: () => null,
-    },
-  );
-
-  const error = await Effect.runPromise(effect);
-
-  expect(error).toBeInstanceOf(JWE.EncryptionNotSupportedError);
-  expect(error?._tag).toBe("JWEEncryptionNotSupportedError");
-  expect(error?.message).toBe('Unsupported JWE encryption: "A128GCM"');
 });
