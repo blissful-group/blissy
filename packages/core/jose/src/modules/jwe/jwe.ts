@@ -6,13 +6,6 @@ import {
   JWEEncryptionNotSupportedError,
 } from "./jwe.errors";
 import { Helper } from "./jwe.helper";
-import type {
-  JWEAlgorithm,
-  JWEEncryption,
-  JWEHeader,
-  JWEHeaderValue,
-  JWERecipient,
-} from "./jwe.types";
 
 /**
  * Creates and decrypts JSON Web Encryption serializations using dir and A256GCM.
@@ -30,7 +23,7 @@ export class JWE {
   static encryptCompact(input: {
     key: Uint8Array;
     payload: Uint8Array;
-    protectedHeader: JWEHeader;
+    protectedHeader: JWE.Header;
   }) {
     return Effect.gen(function* () {
       const entry = yield* JWE.Helper.encrypt(input);
@@ -83,8 +76,8 @@ export class JWE {
   static encryptFlattened(input: {
     key: Uint8Array;
     payload: Uint8Array;
-    protectedHeader: JWEHeader;
-    header?: Record<string, JWEHeaderValue>;
+    protectedHeader: JWE.Header;
+    header?: Record<string, JWE.HeaderValue>;
   }) {
     return Effect.gen(function* () {
       const entry = yield* JWE.Helper.encrypt(input);
@@ -111,9 +104,9 @@ export class JWE {
   }: {
     key: Uint8Array;
     payload: Uint8Array;
-    protectedHeader: JWEHeader;
+    protectedHeader: JWE.Header;
     recipients: Array<{
-      header?: Record<string, JWEHeaderValue>;
+      header?: Record<string, JWE.HeaderValue>;
     }>;
   }) {
     return Effect.gen(function* () {
@@ -149,7 +142,7 @@ export class JWE {
       ciphertext: string;
       iv: string;
       protected: string;
-      recipients: JWERecipient[];
+      recipients: JWE.Recipient[];
       tag: string;
     };
     kid: string;
@@ -179,9 +172,17 @@ export class JWE {
 }
 
 export declare namespace JWE {
-  export type Algorithm = JWEAlgorithm;
-  export type Encryption = JWEEncryption;
-  export type Header = JWEHeader;
-  export type HeaderValue = JWEHeaderValue;
-  export type Recipient = JWERecipient;
+  export type Algorithm = "dir";
+  export type Encryption = "A256GCM";
+  export type HeaderValue = string | number | boolean | null | string[];
+
+  export type Header = Record<string, HeaderValue> & {
+    alg: Algorithm;
+    enc: Encryption;
+  };
+
+  export type Recipient = {
+    encrypted_key: string;
+    header?: Record<string, HeaderValue>;
+  };
 }

@@ -2,15 +2,14 @@ import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
 import { JWA } from "../jwa/jwa";
-import type { JWAKey } from "../jwa/jwa.types";
+import type { JWS } from "./jws";
 import { SUPPORTED_CRITICAL_HEADERS } from "./jws.constants";
 import { JWSCriticalHeaderError } from "./jws.errors";
-import type { JWSHeader, JWSHeaderValue } from "./jws.types";
 
 export class Helper {
   private static encoder = new TextEncoder();
 
-  static validateCrit(protectedHeader: JWSHeader) {
+  static validateCrit(protectedHeader: JWS.Header) {
     return Effect.gen(function* () {
       for (const criticalHeader of protectedHeader.crit ?? []) {
         if (SUPPORTED_CRITICAL_HEADERS.has(criticalHeader)) continue;
@@ -30,10 +29,10 @@ export class Helper {
     payload,
     protectedHeader,
   }: {
-    key: JWAKey;
+    key: JWA.Key;
     payload: Uint8Array;
-    protectedHeader: JWSHeader;
-    header?: Record<string, JWSHeaderValue>;
+    protectedHeader: JWS.Header;
+    header?: Record<string, JWS.HeaderValue>;
   }) {
     return Effect.gen(function* () {
       const protectedSegment = yield* Base64.encode(

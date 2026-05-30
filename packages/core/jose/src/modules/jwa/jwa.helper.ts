@@ -4,14 +4,14 @@ import {
 } from "@blissy-auth/crypto/source";
 import { Effect } from "effect";
 
+import type { JWA } from "./jwa";
 import {
   JWAAlgorithmNotSupportedError,
   JWAKeyCompatibilityError,
 } from "./jwa.errors";
-import type { JWAAlgorithm, JWAKey } from "./jwa.types";
 
 export class Helper {
-  static importKey({ key, usage }: { key: JWAKey; usage: KeyUsage }) {
+  static importKey({ key, usage }: { key: JWA.Key; usage: KeyUsage }) {
     return Effect.gen(function* () {
       if (!(key instanceof Uint8Array)) return key;
 
@@ -30,7 +30,7 @@ export class Helper {
   }
 
   static getSigningAlgorithm(
-    alg: JWAAlgorithm,
+    alg: JWA.Algorithm,
     algorithms: AlgorithmReference.Service,
   ) {
     switch (alg) {
@@ -60,9 +60,9 @@ export class Helper {
     algorithms,
     key,
   }: {
-    alg: JWAAlgorithm;
+    alg: JWA.Algorithm;
     algorithms: AlgorithmReference.Service;
-    key: JWAKey;
+    key: JWA.Key;
   }) {
     const isHmacKey = key instanceof Uint8Array;
     const isRsaKey =

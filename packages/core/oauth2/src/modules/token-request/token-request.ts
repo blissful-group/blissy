@@ -3,11 +3,6 @@ import { Effect } from "effect";
 import { OAuth2Scope } from "../scope/scope";
 import { OAuth2TokenRequestValidationError } from "./token-request.errors";
 import { Helper } from "./token-request.helper";
-import type {
-  OAuth2TokenRequestAuthentication,
-  OAuth2TokenRequestExtensionParameters,
-  OAuth2TokenRequestValue,
-} from "./token-request.types";
 
 /**
  * Builds OAuth 2.0 token endpoint request objects without performing IO.
@@ -35,8 +30,8 @@ export class OAuth2TokenRequest {
     code: string;
     redirectUri?: string;
     codeVerifier?: string;
-    authentication?: OAuth2TokenRequestAuthentication;
-    parameters?: OAuth2TokenRequestExtensionParameters;
+    authentication?: OAuth2TokenRequest.Authentication;
+    parameters?: OAuth2TokenRequest.ExtensionParameters;
   }) {
     return Effect.gen(function* () {
       yield* OAuth2TokenRequest.Helper.validateNonEmpty(
@@ -85,8 +80,8 @@ export class OAuth2TokenRequest {
     tokenEndpoint: string;
     refreshToken: string;
     scope?: OAuth2Scope.Set;
-    authentication?: OAuth2TokenRequestAuthentication;
-    parameters?: OAuth2TokenRequestExtensionParameters;
+    authentication?: OAuth2TokenRequest.Authentication;
+    parameters?: OAuth2TokenRequest.ExtensionParameters;
   }) {
     return Effect.gen(function* () {
       yield* OAuth2TokenRequest.Helper.validateNonEmpty(
@@ -119,8 +114,8 @@ export class OAuth2TokenRequest {
   }: {
     tokenEndpoint: string;
     scope?: OAuth2Scope.Set;
-    authentication?: OAuth2TokenRequestAuthentication;
-    parameters?: OAuth2TokenRequestExtensionParameters;
+    authentication?: OAuth2TokenRequest.Authentication;
+    parameters?: OAuth2TokenRequest.ExtensionParameters;
   }) {
     return Effect.gen(function* () {
       return yield* OAuth2TokenRequest.build({
@@ -144,8 +139,8 @@ export class OAuth2TokenRequest {
   }: {
     tokenEndpoint: string;
     bodyParameters: Readonly<Record<string, string | undefined>>;
-    authentication?: OAuth2TokenRequestAuthentication;
-    parameters?: OAuth2TokenRequestExtensionParameters;
+    authentication?: OAuth2TokenRequest.Authentication;
+    parameters?: OAuth2TokenRequest.ExtensionParameters;
   }) {
     return Effect.gen(function* () {
       const url = yield* OAuth2TokenRequest.Helper.parseUrl(
@@ -182,7 +177,19 @@ export class OAuth2TokenRequest {
 }
 
 export namespace OAuth2TokenRequest {
-  export type Authentication = OAuth2TokenRequestAuthentication;
-  export type ExtensionParameters = OAuth2TokenRequestExtensionParameters;
-  export type Request = OAuth2TokenRequestValue;
+  export type Authentication = {
+    bodyParameters: Readonly<Record<string, string>>;
+    headers: Readonly<Record<string, string>>;
+  };
+
+  export type ExtensionParameters = Readonly<
+    Record<string, string | null | undefined>
+  >;
+
+  export type Request = {
+    method: "POST";
+    url: URL;
+    headers: Record<string, string>;
+    body: URLSearchParams;
+  };
 }

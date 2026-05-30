@@ -2,17 +2,19 @@ import { Effect } from "effect";
 
 import { Filters } from "../../utils/filters";
 import { JWKSKeyMatchError } from "./jwks.errors";
-import type { JWKSKey } from "./jwks.types";
+import type { JWKSKeySchema } from "./jwks.schema";
 
 export class Helper {
   static findSingleMatch({
     args,
     keys,
   }: {
-    keys: ReadonlyArray<JWKSKey>;
+    keys: ReadonlyArray<typeof JWKSKeySchema.Type>;
     args: Filters.Input;
   }) {
-    const matches = keys.filter(Filters.keys(args));
+    const matches = keys.filter((key) =>
+      Filters.keys(args)(key as Filters.Input),
+    );
 
     if (matches.length <= 1) return Effect.succeed(matches[0]);
 

@@ -1,6 +1,6 @@
-import type { CryptoService } from "./crypto.types";
+import type { CryptoReference } from "./crypto";
 
-export const defaultValue = (): CryptoService => ({
+export const defaultValue = (): CryptoReference.Service => ({
   decrypt: globalThis.crypto.subtle.decrypt.bind(globalThis.crypto.subtle),
   digest: globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle),
   encrypt: globalThis.crypto.subtle.encrypt.bind(globalThis.crypto.subtle),

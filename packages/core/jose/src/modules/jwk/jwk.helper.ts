@@ -3,17 +3,19 @@ import { Effect } from "effect";
 
 import { Filters } from "../../utils/filters";
 import { JWKKeyMatchError } from "./jwk.errors";
-import type { JWKKey } from "./jwk.types";
+import type { JWKKeySchema } from "./jwk.schema";
 
 export class Helper {
   static findSingleMatch({
     args,
     keys,
   }: {
-    keys: ReadonlyArray<JWKKey>;
+    keys: ReadonlyArray<typeof JWKKeySchema.Type>;
     args: Filters.Input;
   }) {
-    const matches = keys.filter(Filters.keys(args));
+    const matches = keys.filter((key) =>
+      Filters.keys(args)(key as Filters.Input),
+    );
 
     if (matches.length <= 1) return Effect.succeed(matches[0]);
 
@@ -24,7 +26,10 @@ export class Helper {
     return Effect.fail(error);
   }
 
-  static getAlgorithm(key: JWKKey, algorithms: AlgorithmReference.Service) {
+  static getAlgorithm(
+    key: typeof JWKKeySchema.Type,
+    algorithms: AlgorithmReference.Service,
+  ) {
     if (key.kty === "RSA") {
       return algorithms.jwa[AlgorithmReference.RS256].importKey;
     }

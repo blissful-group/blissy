@@ -11,8 +11,8 @@ import {
   JWKSetParseError,
 } from "./jwk.errors";
 import { Helper } from "./jwk.helper";
+import type { JWKKeySchema } from "./jwk.schema";
 import { JWKSetSchema } from "./jwk.schema";
-import type { JWKKey, JWKSet, JWKValue } from "./jwk.types";
 
 export {
   JWKKeyImportError,
@@ -46,7 +46,10 @@ export class JWK {
   /**
    * Finds a single key in a JWK Set matching the given criteria.
    */
-  static findKey({ set, ...args }: Filters.Input & { set: JWKSet }) {
+  static findKey({
+    set,
+    ...args
+  }: Filters.Input & { set: typeof JWKSetSchema.Type }) {
     return Effect.gen(function* () {
       const parsedSet = yield* JWK.parseSet(set);
 
@@ -57,7 +60,7 @@ export class JWK {
   /**
    * Imports a public JWK for signature verification.
    */
-  static importVerificationKey(key: JWKKey) {
+  static importVerificationKey(key: typeof JWKKeySchema.Type) {
     return Effect.gen(function* () {
       const algorithms = yield* AlgorithmReference;
       const algorithm = JWK.Helper.getAlgorithm(key, algorithms);
@@ -82,7 +85,6 @@ export class JWK {
 }
 
 export declare namespace JWK {
-  export type Value = JWKValue;
-  export type Key = JWKKey;
-  export type Set = JWKSet;
+  export type Key = typeof JWKKeySchema.Type;
+  export type Set = typeof JWKSetSchema.Type;
 }

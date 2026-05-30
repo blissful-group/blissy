@@ -1,12 +1,9 @@
 import { Effect } from "effect";
 
+import type { OAuth2Scope } from "../scope/scope";
 import { OAuth2TokenResponseValidationError } from "./token-response.errors";
 import { Helper } from "./token-response.helper";
-import type {
-  OAuth2TokenErrorResponse,
-  OAuth2TokenResponseValue,
-  OAuth2TokenSuccessResponse,
-} from "./token-response.types";
+import type { ExpiresInSchema } from "./token-response.schema";
 
 /**
  * Parses OAuth 2.0 token endpoint JSON responses.
@@ -36,7 +33,21 @@ export class OAuth2TokenResponse {
 }
 
 export namespace OAuth2TokenResponse {
-  export type Value = OAuth2TokenResponseValue;
-  export type Success = OAuth2TokenSuccessResponse;
-  export type Error = OAuth2TokenErrorResponse;
+  export type Success = {
+    type: "success";
+    accessToken: string;
+    tokenType: "Bearer";
+    expiresIn?: typeof ExpiresInSchema.Type;
+    refreshToken?: string;
+    scope?: OAuth2Scope.Set;
+  };
+
+  export type Error = {
+    type: "error";
+    error: string;
+    errorDescription?: string;
+    errorUri?: URL;
+  };
+
+  export type Value = Success | Error;
 }

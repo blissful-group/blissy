@@ -1,8 +1,8 @@
 import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
-import type { JWAKey } from "../jwa/jwa.types";
-import type { JWKSet } from "../jwk/jwk.types";
+import type { JWA } from "../jwa/jwa";
+import type { JWKSetSchema } from "../jwk/jwk.schema";
 import { JWS } from "../jws/jws";
 import {
   JWTClaimValidationError,
@@ -10,12 +10,6 @@ import {
   JWTVerificationError,
 } from "./jwt.errors";
 import { Helper } from "./jwt.helper";
-import type {
-  JWTAlgorithm,
-  JWTClaims,
-  JWTHeader,
-  JWTHeaderValue,
-} from "./jwt.types";
 
 /**
  * Signs, verifies, and decodes JSON Web Tokens.
@@ -38,9 +32,9 @@ export class JWT {
     claims,
     key,
   }: {
-    claims: JWTClaims;
-    key: JWAKey;
-    alg?: Exclude<JWTAlgorithm, "none">;
+    claims: JWT.Claims;
+    key: JWA.Key;
+    alg?: Exclude<JWT.Algorithm, "none">;
   }) {
     return JWS.signCompact({
       key,
@@ -67,8 +61,8 @@ export class JWT {
     token,
   }: {
     token: string;
-    key?: JWAKey;
-    jwks?: JWKSet;
+    key?: JWA.Key;
+    jwks?: typeof JWKSetSchema.Type;
     issuer?: string;
     subject?: string;
     audience?: string;
@@ -149,9 +143,11 @@ export class JWT {
       try {
         const headerBytes = yield* Base64.decode(headerSegment!);
         const payloadBytes = yield* Base64.decode(payloadSegment!);
-        const header = JSON.parse(JWT.decoder.decode(headerBytes)) as JWTHeader;
+        const header = JSON.parse(
+          JWT.decoder.decode(headerBytes),
+        ) as JWT.Header;
         const decoded = JWT.decoder.decode(payloadBytes);
-        const claims = JSON.parse(decoded) as JWTClaims;
+        const claims = JSON.parse(decoded) as JWT.Claims;
 
         return { claims, header };
       } catch {
@@ -164,8 +160,20 @@ export class JWT {
 }
 
 export declare namespace JWT {
-  export type Algorithm = JWTAlgorithm;
-  export type Claims = JWTClaims;
-  export type Header = JWTHeader;
-  export type HeaderValue = JWTHeaderValue;
+  export type Algorithm = JWA.Algorithm | "none";
+  export type HeaderValue = string | number | boolean | null | string[];
+
+  export type Header = Record<string, HeaderValue> & {
+    alg: Algorithm;
+    typ: "JWT";
+  };
+
+  export type Claims = Record<string, unknown> & {
+    iss?: string;
+    sub?: string;
+    aud?: string | string[];
+    exp?: number;
+    nbf?: number;
+    iat?: number;
+  };
 }

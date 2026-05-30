@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 
 import { OAuth2PKCE } from "../pkce/pkce";
+import type { CodeChallengeMethodSchema } from "../pkce/pkce.schema";
 import { OAuth2Scope } from "../scope/scope";
 import { AuthorizationRequestValidationError } from "./authorization-request.errors";
 import { Helper } from "./authorization-request.helper";
@@ -35,7 +36,7 @@ export class OAuth2AuthorizationRequest {
     scope?: OAuth2Scope.Set;
     state?: string;
     codeChallenge?: string;
-    codeChallengeMethod?: OAuth2PKCE.CodeChallengeMethod;
+    codeChallengeMethod?: typeof CodeChallengeMethodSchema.Type;
     parameters?: Readonly<Record<string, string>>;
   }) {
     return Effect.gen(function* () {

@@ -6,7 +6,6 @@ export default defineConfig({
     environment: "node",
     coverage: {
       enabled: true,
-      exclude: ["**/*.types.ts"],
       reporter: [["text", { skipFull: false }], "json"],
       thresholds: {
         lines: 100,

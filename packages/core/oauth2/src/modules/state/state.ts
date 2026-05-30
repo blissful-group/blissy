@@ -7,7 +7,6 @@ import {
   OAuth2StateValidationError,
 } from "./state.errors";
 import { Helper } from "./state.helper";
-import type { OAuth2StateValidationOptions } from "./state.types";
 
 /**
  * Generates and validates OAuth 2.0 state values.
@@ -47,7 +46,7 @@ export class OAuth2State {
   static validate({
     expectedState,
     returnedState,
-  }: OAuth2StateValidationOptions) {
+  }: OAuth2State.ValidationOptions) {
     return Effect.gen(function* () {
       yield* OAuth2State.Helper.validateExpectedState(expectedState);
       yield* OAuth2State.Helper.validateReturnedState(returnedState);
@@ -60,5 +59,8 @@ export class OAuth2State {
 }
 
 export namespace OAuth2State {
-  export type ValidationOptions = OAuth2StateValidationOptions;
+  export type ValidationOptions = {
+    expectedState?: string;
+    returnedState?: string;
+  };
 }

@@ -4,5 +4,8 @@ export * from "./modules/client-authentication/client-authentication";
 export * from "./modules/pkce/pkce";
 export * from "./modules/scope/scope";
 export * from "./modules/state/state";
+export * from "./modules/token-introspection-request/token-introspection-request";
+export * from "./modules/token-introspection-response/token-introspection-response";
 export * from "./modules/token-request/token-request";
 export * from "./modules/token-response/token-response";
+export * from "./modules/token-revocation-request/token-revocation-request";

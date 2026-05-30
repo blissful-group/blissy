@@ -15,8 +15,11 @@ This package currently provides:
 - `OAuth2PKCE` for PKCE verifier generation, challenge creation, and challenge verification
 - `OAuth2Scope` for scope parsing, formatting, and comparison
 - `OAuth2State` for state generation and validation
+- `OAuth2TokenIntrospectionRequest` for token introspection endpoint request construction
+- `OAuth2TokenIntrospectionResponse` for token introspection response parsing
 - `OAuth2TokenRequest` for token endpoint request construction
 - `OAuth2TokenResponse` for token success and token error response parsing
+- `OAuth2TokenRevocationRequest` for token revocation endpoint request construction
 
 Every public operation returns an `Effect`, so callers can decide whether to run it with `Effect.runPromise`, compose it, or handle failures functionally.
 
@@ -126,11 +129,27 @@ This package intentionally implements focused OAuth 2.0 primitives today.
 - `error_description`
 - `error_uri`
 
+### Token Introspection
+
+- Token introspection request construction
+- `token`
+- `token_type_hint`
+- Client authentication fragments
+- Extension parameters with reserved parameter collision rejection
+- Active and inactive token introspection response parsing
+- Standard RFC 7662 response claims
+
+### Token Revocation
+
+- Token revocation request construction
+- `token`
+- `token_type_hint`
+- Client authentication fragments
+- Extension parameters with reserved parameter collision rejection
+
 ## Not Implemented Yet
 
 - Redirect URI validation and registered redirect URI matching
-- Token revocation
-- Token introspection
 - Fragment response mode parsing
 - Shared HTTP response parsing utilities
 - Shared OAuth error model beyond module-specific typed errors
@@ -146,8 +165,11 @@ import {
   OAuth2PKCE,
   OAuth2Scope,
   OAuth2State,
+  OAuth2TokenIntrospectionRequest,
+  OAuth2TokenIntrospectionResponse,
   OAuth2TokenRequest,
   OAuth2TokenResponse,
+  OAuth2TokenRevocationRequest,
 } from "@blissy-auth/oauth2";
 ```
 
@@ -281,7 +303,6 @@ await Effect.runPromise(
 
 Available attached types and errors:
 
-- `OAuth2PKCE.CodeChallengeMethod`
 - `OAuth2PKCE.CodeVerifierGenerationOptions`
 - `OAuth2PKCE.CodeVerifierValidationError`
 - `OAuth2PKCE.CodeChallengeMethodError`
@@ -328,7 +349,6 @@ const includesRead = await Effect.runPromise(
 
 Available attached types and errors:
 
-- `OAuth2Scope.Value`
 - `OAuth2Scope.Set`
 - `OAuth2Scope.ValidationError`
 
@@ -419,6 +439,101 @@ Available attached types and errors:
 - `OAuth2TokenResponse.Success`
 - `OAuth2TokenResponse.Error`
 - `OAuth2TokenResponse.ValidationError`
+
+## Token Introspection
+
+Build token introspection endpoint request objects and parse introspection responses.
+
+```ts
+import { Effect } from "effect";
+import {
+  OAuth2ClientAuthentication,
+  OAuth2TokenIntrospectionRequest,
+  OAuth2TokenIntrospectionResponse,
+} from "@blissy-auth/oauth2";
+
+const authentication = await Effect.runPromise(
+  OAuth2ClientAuthentication.clientSecretBasic({
+    clientId: "client-123",
+    clientSecret: "secret-123",
+  }),
+);
+
+const request = await Effect.runPromise(
+  OAuth2TokenIntrospectionRequest.create({
+    authentication,
+    introspectionEndpoint: "https://authorization-server.example/introspect",
+    token: "access-123",
+    tokenTypeHint: "access_token",
+  }),
+);
+
+const httpResponse = await fetch(request.url, {
+  method: request.method,
+  headers: request.headers,
+  body: request.body,
+});
+
+const response = await Effect.runPromise(
+  OAuth2TokenIntrospectionResponse.parse(await httpResponse.json()),
+);
+
+if (response.active) {
+  console.log(response.clientId);
+}
+```
+
+Available attached types and errors:
+
+- `OAuth2TokenIntrospectionRequest.Authentication`
+- `OAuth2TokenIntrospectionRequest.ExtensionParameters`
+- `OAuth2TokenIntrospectionRequest.Request`
+- `OAuth2TokenIntrospectionRequest.ValidationError`
+- `OAuth2TokenIntrospectionResponse.Value`
+- `OAuth2TokenIntrospectionResponse.Active`
+- `OAuth2TokenIntrospectionResponse.Inactive`
+- `OAuth2TokenIntrospectionResponse.ValidationError`
+
+## Token Revocation
+
+Build token revocation endpoint request objects.
+
+```ts
+import { Effect } from "effect";
+import {
+  OAuth2ClientAuthentication,
+  OAuth2TokenRevocationRequest,
+} from "@blissy-auth/oauth2";
+
+const authentication = await Effect.runPromise(
+  OAuth2ClientAuthentication.clientSecretPost({
+    clientId: "client-123",
+    clientSecret: "secret-123",
+  }),
+);
+
+const request = await Effect.runPromise(
+  OAuth2TokenRevocationRequest.create({
+    authentication,
+    revocationEndpoint: "https://authorization-server.example/revoke",
+    token: "refresh-123",
+    tokenTypeHint: "refresh_token",
+  }),
+);
+
+await fetch(request.url, {
+  method: request.method,
+  headers: request.headers,
+  body: request.body,
+});
+```
+
+Available attached types and errors:
+
+- `OAuth2TokenRevocationRequest.Authentication`
+- `OAuth2TokenRevocationRequest.ExtensionParameters`
+- `OAuth2TokenRevocationRequest.Request`
+- `OAuth2TokenRevocationRequest.ValidationError`
 
 ## Security Notes
 
