@@ -1,5 +1,17 @@
 # @blissy-auth/oidc
 
+## 0.0.3
+
+### Patch Changes
+
+- b60f5c1: Move the crypto package into the core workspace and make it publishable.
+  Standardize core package build and publish metadata for tsdown-generated package exports, and update internal imports to consume package root exports instead of source subpaths.
+- Updated dependencies [b60f5c1]
+- Updated dependencies [f3b256f]
+  - @blissy-auth/crypto@0.0.2
+  - @blissy-auth/jose@0.1.3
+  - @blissy-auth/oauth2@0.0.4
+
 ## 0.0.2
 
 ### Patch Changes

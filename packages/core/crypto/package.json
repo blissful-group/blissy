@@ -1,6 +1,6 @@
 {
   "name": "@blissy-auth/crypto",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Shared Effect crypto service for Blissy auth packages.",
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
