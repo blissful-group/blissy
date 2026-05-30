@@ -1,4 +1,9 @@
-# @blissy-auth/crypto
+[Back to root](https://github.com/blissful-group/blissy)
+
+# <img src="https://raw.githubusercontent.com/blissful-group/blissy/main/assets/blissy.png" alt="" width="28" />- [@blissy-auth/crypto](https://github.com/blissful-group/blissy/blob/main/packages/core/crypto)
+
+![NPM License](https://img.shields.io/npm/l/@blissy-auth/crypto)
+![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/@blissy-auth/crypto)
 
 Shared Effect crypto service for Blissy workspace packages.
 

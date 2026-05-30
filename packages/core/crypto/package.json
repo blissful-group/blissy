@@ -1,6 +1,6 @@
 {
   "name": "@blissy-auth/crypto",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Shared Effect crypto service for Blissy auth packages.",
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
@@ -32,6 +32,23 @@
       }
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blissful-group/blissy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blissful-group/blissy/issues"
+  },
+  "keywords": [
+    "crypto",
+    "cryptography",
+    "webcrypto",
+    "random",
+    "hashing",
+    "encoding",
+    "security",
+    "effect"
+  ],
   "scripts": {
     "build": "tsdown",
     "format": "eslint . --fix",
