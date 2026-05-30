@@ -1,5 +1,6 @@
 {
   "name": "@blissy-auth/typescript-config",
+  "version": "0.0.0",
   "description": "Blissy universal typescript configuration package",
   "private": true,
   "license": "MIT",
