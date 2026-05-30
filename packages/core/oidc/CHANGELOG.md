@@ -1,5 +1,14 @@
 # @blissy-auth/oidc
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [d1446a1]
+  - @blissy-auth/crypto@0.0.2
+  - @blissy-auth/jose@0.1.4
+  - @blissy-auth/oauth2@0.0.5
+
 ## 0.0.3
 
 ### Patch Changes
