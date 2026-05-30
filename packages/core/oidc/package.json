@@ -1,6 +1,6 @@
 {
   "name": "@blissy-auth/oidc",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "TypeScript implementation of OpenID Connect protocol primitives with support for provider metadata parsing, discovery documents, nonce generation, and nonce validation.",
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
