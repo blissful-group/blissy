@@ -20,10 +20,13 @@ The packages in this repository aim to keep dependencies intentionally small.
 - Platform primitives where possible, such as Web Crypto
 - No large auth or JOSE dependency stacks
 
+To view the dependency graph run `moon pg`
+
 ## Packages
 
+- [`@blissy-auth/crypto`](./packages/core/crypto/README.md): Shared Effect crypto service used by workspace packages
 - [`@blissy-auth/jose`](./packages/core/jose/README.md): JOSE primitives for `JWA`, `JWE`, `JWK`, `JWKS`, `JWS`, and `JWT`
-- [`@blissy-auth/oauth2`](./packages/core/oauth2/README.md): OAuth 2.0 primitives for authorization requests, authorization responses, PKCE, state, scopes, client authentication, token requests, and token responses
+- [`@blissy-auth/oauth2`](./packages/core/oauth2/README.md): OAuth 2.0 primitives for authorization requests, authorization responses, PKCE, state, scopes, client authentication, token requests, token responses, token introspection, and token revocation
 - [`@blissy-auth/oidc`](./packages/core/oidc/README.md): OpenID Connect primitives for authorization requests, callbacks, discovery, ID token validation, nonce handling, and UserInfo parsing
 
 ## Getting Started

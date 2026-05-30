@@ -4,6 +4,10 @@ layer: library
 tasks:
   build:
     command: pnpm build
+    deps: 
+      - ^:build
+    outputs:
+      - dist/
 
   format:
     command: pnpm format
@@ -13,6 +17,8 @@ tasks:
 
   test:
     command: pnpm test
+    outputs:
+      - coverage/
 
   release:
     command: pnpm release

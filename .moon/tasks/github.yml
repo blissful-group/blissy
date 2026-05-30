@@ -1,9 +1,6 @@
 inheritedBy:
   language: bash
 
-taskOptions:
-  cache: false
-
 tasks:
   workflow_purge:
     description: Delete all GitHub workflow runs

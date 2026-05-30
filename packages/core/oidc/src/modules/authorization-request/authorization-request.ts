@@ -1,8 +1,5 @@
-import type { OAuth2PKCE } from "@blissy-auth/oauth2/source";
-import {
-  OAuth2AuthorizationRequest,
-  OAuth2Scope,
-} from "@blissy-auth/oauth2/source";
+import type { OAuth2PKCE } from "@blissy-auth/oauth2";
+import { OAuth2AuthorizationRequest, OAuth2Scope } from "@blissy-auth/oauth2";
 import { Effect } from "effect";
 
 import { OIDCAuthorizationRequestValidationError } from "./authorization-request.errors";

@@ -1,7 +1,4 @@
-import {
-  AlgorithmReference,
-  CryptoReference,
-} from "@blissy-auth/crypto/source";
+import { AlgorithmReference, CryptoReference } from "@blissy-auth/crypto";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 

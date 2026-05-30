@@ -1,4 +1,4 @@
-import { AlgorithmReference } from "@blissy-auth/crypto/source";
+import { AlgorithmReference } from "@blissy-auth/crypto";
 import { Effect } from "effect";
 
 import { Filters } from "../../utils/filters";

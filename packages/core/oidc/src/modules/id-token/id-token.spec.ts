@@ -1,4 +1,4 @@
-import { JWT } from "@blissy-auth/jose/source";
+import { JWT } from "@blissy-auth/jose";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 

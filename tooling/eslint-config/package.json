@@ -1,5 +1,6 @@
 {
   "name": "@blissy-auth/eslint-config",
+  "version": "0.0.0",
   "description": "Blissy eslint configuration package",
   "private": true,
   "license": "MIT",

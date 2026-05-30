@@ -6,5 +6,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true
-  }
+  },
+  "exclude": ["dist", "coverage"]
 }
