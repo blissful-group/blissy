@@ -1,11 +1,23 @@
 # @blissy-auth/crypto
 
-Shared private Effect crypto service for Blissy workspace packages.
+Shared Effect crypto service for Blissy workspace packages.
 
-This package is not published. Source-code packages should import it through the source export:
+This package provides injectable Web Crypto-backed services for Blissy packages. It is primarily intended for internal package composition, tests, and custom runtimes.
+
+## Install
+
+```bash
+pnpm add @blissy-auth/crypto effect
+```
+
+```bash
+npm install @blissy-auth/crypto effect
+```
+
+## Basic Usage
 
 ```ts
-import { AlgorithmReference, CryptoReference } from "@blissy-auth/crypto/source";
+import { AlgorithmReference, CryptoReference } from "@blissy-auth/crypto";
 ```
 
 ## Default Service
@@ -27,7 +39,7 @@ import { AlgorithmReference, CryptoReference } from "@blissy-auth/crypto/source"
 Use `Effect.provideService` to override individual crypto operations while keeping the rest of the default implementation.
 
 ```ts
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import { CryptoReference } from "@blissy-auth/crypto";
 import { Effect } from "effect";
 
 const deterministicCrypto = {
@@ -49,7 +61,7 @@ const program = someEffectUsingCrypto.pipe(
 Use `AlgorithmReference` to override algorithm descriptors separately from the crypto implementation.
 
 ```ts
-import { AlgorithmReference } from "@blissy-auth/crypto/source";
+import { AlgorithmReference } from "@blissy-auth/crypto";
 import { Effect } from "effect";
 
 const customAlgorithms = {

@@ -1,6 +1,7 @@
 layer: tool
 language: bash
 stack: systems
+id: repository
 
 tasks:
   changeset:

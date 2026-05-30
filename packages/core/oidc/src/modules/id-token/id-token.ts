@@ -1,5 +1,5 @@
-import type { JWK } from "@blissy-auth/jose/source";
-import { JWT } from "@blissy-auth/jose/source";
+import type { JWK } from "@blissy-auth/jose";
+import { JWT } from "@blissy-auth/jose";
 import { Effect } from "effect";
 
 import { OIDCIDTokenValidationError } from "./id-token.errors";

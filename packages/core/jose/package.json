@@ -5,32 +5,31 @@
   "license": "MIT",
   "author": "Marco van Harten <marcovanharten89@gmail.com> (https://github.com/blissful89)",
   "homepage": "https://github.com/blissful-group/blissy#readme",
-  "publishConfig": {
-    "access": "public",
-    "provenance": true,
-    "registry": "https://registry.npmjs.org/"
-  },
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./source": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "registry": "https://registry.npmjs.org/",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/index.d.mts",
+          "default": "./dist/index.mjs"
+        },
+        "require": {
+          "types": "./dist/index.d.cts",
+          "default": "./dist/index.cjs"
+        }
+      }
     }
   },
   "repository": {
@@ -59,7 +58,8 @@
     "lint:dependencies": "pnpx depcheck",
     "lint:eslint": "eslint .",
     "lint:tsc": "tsc",
-    "release": "run-s build && npm publish",
+    "release": "pnpm publish",
+    "prepack": "pnpm build",
     "test": "run-p test:unit test:bench",
     "test:unit": "vitest run",
     "test:bench": "vitest bench --run"

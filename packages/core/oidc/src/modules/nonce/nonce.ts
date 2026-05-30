@@ -1,4 +1,4 @@
-import { CryptoReference } from "@blissy-auth/crypto/source";
+import { CryptoReference } from "@blissy-auth/crypto";
 import { Effect } from "effect";
 
 import { NONCE_DEFAULT_BYTE_LENGTH } from "./nonce.constants";

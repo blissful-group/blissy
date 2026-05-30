@@ -1,6 +1,5 @@
 packages:
   - "packages/**/*"
-  - "services/**/*"
   - "tooling/**/*"
 allowBuilds:
   esbuild: true

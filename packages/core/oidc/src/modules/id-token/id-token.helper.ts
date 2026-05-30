@@ -1,4 +1,4 @@
-import type { JWT } from "@blissy-auth/jose/source";
+import type { JWT } from "@blissy-auth/jose";
 import { Effect } from "effect";
 
 import { compare } from "../../utils/compare";

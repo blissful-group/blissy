@@ -1,4 +1,4 @@
-import { OAuth2AuthorizationResponse } from "@blissy-auth/oauth2/source";
+import { OAuth2AuthorizationResponse } from "@blissy-auth/oauth2";
 import type { Effect } from "effect";
 
 type OIDCAuthorizationCodeCallback =

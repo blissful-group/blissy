@@ -46,7 +46,7 @@ npm install @blissy-auth/oidc effect
 
 Node.js versions with Web Crypto support work out of the box.
 
-OIDC uses the workspace crypto service indirectly through OAuth2, JOSE, and nonce generation. See [`@blissy-auth/crypto`](https://github.com/blissful-group/blissy/tree/main/services/crypto) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
+OIDC uses the workspace crypto service through OAuth2, JOSE, and nonce generation. See [`@blissy-auth/crypto`](https://github.com/blissful-group/blissy/tree/main/packages/core/crypto) for documentation on overriding the default Web Crypto-backed service in tests or custom runtimes.
 
 ## Current Support
 
@@ -89,15 +89,6 @@ This package intentionally implements focused OpenID Connect relying-party primi
 
 - UserInfo response object parsing
 - Required `sub` validation
-
-## Not Implemented Yet
-
-- Discovery document fetching
-- JWKS document fetching
-- Authorization code token exchange orchestration
-- Session management
-- Framework integration
-- `form_post` and fragment response modes
 
 ## Basic Usage
 
