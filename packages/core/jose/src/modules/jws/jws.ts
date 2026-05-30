@@ -2,10 +2,8 @@ import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
 import { JWA } from "../jwa/jwa";
-import type { JWAKey } from "../jwa/jwa.types";
 import { JWSCriticalHeaderError, JWSVerificationError } from "./jws.errors";
 import { Helper } from "./jws.helper";
-import type { JWSHeader, JWSHeaderValue } from "./jws.types";
 
 /**
  * Creates and verifies JSON Web Signatures using base64url encoding.
@@ -23,10 +21,10 @@ export class JWS {
    * Creates a compact JWS serialization.
    */
   static signCompact(input: {
-    key: JWAKey;
+    key: JWA.Key;
     payload: Uint8Array;
-    protectedHeader: JWSHeader;
-    header?: Record<string, JWSHeaderValue>;
+    protectedHeader: JWS.Header;
+    header?: Record<string, JWS.HeaderValue>;
   }) {
     return Effect.gen(function* () {
       const entry = yield* JWS.Helper.createSignatureEntry(input);
@@ -38,7 +36,7 @@ export class JWS {
   /**
    * Verifies a compact JWS serialization and returns its decoded payload and protected header.
    */
-  static verifyCompact({ key, token }: { key: JWAKey; token: string }) {
+  static verifyCompact({ key, token }: { key: JWA.Key; token: string }) {
     return Effect.gen(function* () {
       const segments = token.split(".");
 
@@ -54,7 +52,7 @@ export class JWS {
       const protectedHeaderBytes = yield* Base64.decode(protectedSegment!);
       const protectedHeader = JSON.parse(
         JWS.decoder.decode(protectedHeaderBytes),
-      ) as JWSHeader;
+      ) as JWS.Header;
 
       yield* JWS.Helper.validateCrit(protectedHeader);
 
@@ -85,10 +83,10 @@ export class JWS {
    * Creates a flattened JSON JWS serialization.
    */
   static signFlattened(input: {
-    key: JWAKey;
+    key: JWA.Key;
     payload: Uint8Array;
-    protectedHeader: JWSHeader;
-    header?: Record<string, JWSHeaderValue>;
+    protectedHeader: JWS.Header;
+    header?: Record<string, JWS.HeaderValue>;
   }) {
     return Effect.gen(function* () {
       const entry = yield* JWS.Helper.createSignatureEntry(input);
@@ -111,15 +109,15 @@ export class JWS {
   }: {
     payload: Uint8Array;
     signatures: Array<{
-      key: JWAKey;
-      protectedHeader: JWSHeader;
-      header?: Record<string, JWSHeaderValue>;
+      key: JWA.Key;
+      protectedHeader: JWS.Header;
+      header?: Record<string, JWS.HeaderValue>;
     }>;
   }) {
     return Effect.gen(function* () {
       const payloadSegment = yield* Base64.encode(payload);
       const serializedSignatures = [] as Array<{
-        header?: Record<string, JWSHeaderValue>;
+        header?: Record<string, JWS.HeaderValue>;
         protected: string;
         signature: string;
       }>;
@@ -151,6 +149,10 @@ export class JWS {
 }
 
 export declare namespace JWS {
-  export type Header = JWSHeader;
-  export type HeaderValue = JWSHeaderValue;
+  export type HeaderValue = string | number | boolean | null | string[];
+
+  export type Header = Record<string, HeaderValue> & {
+    alg: JWA.Algorithm;
+    crit?: string[];
+  };
 }

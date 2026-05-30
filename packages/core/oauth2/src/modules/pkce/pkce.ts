@@ -10,10 +10,7 @@ import {
   CodeVerifierValidationError,
 } from "./pkce.errors";
 import { Helper } from "./pkce.helper";
-import type {
-  OAuth2PKCECodeChallengeMethod,
-  OAuth2PKCECodeVerifierGenerationOptions,
-} from "./pkce.types";
+import type { CodeChallengeMethodSchema } from "./pkce.schema";
 
 /**
  * Validates PKCE code verifiers and derives PKCE code challenges.
@@ -43,7 +40,7 @@ export class OAuth2PKCE {
    */
   static generateCodeVerifier({
     byteLength = 32,
-  }: OAuth2PKCECodeVerifierGenerationOptions = {}) {
+  }: OAuth2PKCE.CodeVerifierGenerationOptions = {}) {
     return Effect.gen(function* () {
       const crypto = yield* CryptoReference;
       const bytes = new Uint8Array(byteLength);
@@ -74,7 +71,7 @@ export class OAuth2PKCE {
     method = "S256",
   }: {
     codeVerifier: string;
-    method?: OAuth2PKCECodeChallengeMethod;
+    method?: typeof CodeChallengeMethodSchema.Type;
   }) {
     return Effect.gen(function* () {
       yield* OAuth2PKCE.validateCodeVerifier(codeVerifier);
@@ -108,7 +105,7 @@ export class OAuth2PKCE {
   }: {
     codeVerifier: string;
     codeChallenge: string;
-    method?: OAuth2PKCECodeChallengeMethod;
+    method?: typeof CodeChallengeMethodSchema.Type;
   }) {
     return Effect.gen(function* () {
       const expectedCodeChallenge = yield* OAuth2PKCE.createCodeChallenge({
@@ -129,7 +126,8 @@ export class OAuth2PKCE {
 }
 
 export namespace OAuth2PKCE {
-  export type CodeChallengeMethod = OAuth2PKCECodeChallengeMethod;
-  export type CodeVerifierGenerationOptions =
-    OAuth2PKCECodeVerifierGenerationOptions;
+  export type CodeChallengeMethod = typeof CodeChallengeMethodSchema.Type;
+  export type CodeVerifierGenerationOptions = {
+    byteLength?: number;
+  };
 }

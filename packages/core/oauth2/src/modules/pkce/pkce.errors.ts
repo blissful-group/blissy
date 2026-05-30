@@ -1,6 +1,6 @@
 import { Data } from "effect";
 
-import type { OAuth2PKCECodeChallengeMethod } from "./pkce.types";
+import type { CodeChallengeMethodSchema } from "./pkce.schema";
 
 export class CodeVerifierValidationError extends Data.TaggedError(
   "CodeVerifierValidationError",
@@ -21,5 +21,5 @@ export class CodeChallengeVerificationError extends Data.TaggedError(
   "CodeChallengeVerificationError",
 )<{
   message: "Invalid PKCE code challenge";
-  method: OAuth2PKCECodeChallengeMethod;
+  method: typeof CodeChallengeMethodSchema.Type;
 }> {}

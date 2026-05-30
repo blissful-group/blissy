@@ -2,7 +2,7 @@ import { Effect } from "effect";
 
 import { OAuth2ScopeValidationError } from "./scope.errors";
 import { Helper } from "./scope.helper";
-import type { OAuth2ScopeSet, OAuth2ScopeValue } from "./scope.types";
+import type { ScopeValueSchema } from "./scope.schema";
 
 /**
  * Parses, formats, and compares OAuth 2.0 scope values.
@@ -23,7 +23,7 @@ export class OAuth2Scope {
       const trimmed = input.trim();
 
       if (trimmed === "") {
-        return [] satisfies OAuth2ScopeSet;
+        return [] satisfies ReadonlyArray<typeof ScopeValueSchema.Type>;
       }
 
       const scopes = trimmed.split(/\s+/u);
@@ -37,7 +37,7 @@ export class OAuth2Scope {
   /**
    * Formats scope values as a space-delimited OAuth 2.0 scope string.
    */
-  static format(scopes: OAuth2ScopeSet) {
+  static format(scopes: ReadonlyArray<typeof ScopeValueSchema.Type>) {
     return Effect.gen(function* () {
       yield* OAuth2Scope.Helper.validateAll(scopes);
 
@@ -48,7 +48,10 @@ export class OAuth2Scope {
   /**
    * Checks whether a scope set contains a specific required scope.
    */
-  static includes(scopes: OAuth2ScopeSet, requiredScope: OAuth2ScopeValue) {
+  static includes(
+    scopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+    requiredScope: typeof ScopeValueSchema.Type,
+  ) {
     return Effect.gen(function* () {
       yield* OAuth2Scope.Helper.validateAll(scopes);
       yield* OAuth2Scope.Helper.validate(requiredScope);
@@ -60,7 +63,10 @@ export class OAuth2Scope {
   /**
    * Checks whether a scope set contains every required scope.
    */
-  static includesAll(scopes: OAuth2ScopeSet, requiredScopes: OAuth2ScopeSet) {
+  static includesAll(
+    scopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+    requiredScopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+  ) {
     return Effect.gen(function* () {
       yield* OAuth2Scope.Helper.validateAll(scopes);
       yield* OAuth2Scope.Helper.validateAll(requiredScopes);
@@ -76,7 +82,10 @@ export class OAuth2Scope {
   /**
    * Checks whether a scope set contains at least one allowed scope.
    */
-  static includesAny(scopes: OAuth2ScopeSet, allowedScopes: OAuth2ScopeSet) {
+  static includesAny(
+    scopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+    allowedScopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+  ) {
     return Effect.gen(function* () {
       yield* OAuth2Scope.Helper.validateAll(scopes);
       yield* OAuth2Scope.Helper.validateAll(allowedScopes);
@@ -92,7 +101,10 @@ export class OAuth2Scope {
   /**
    * Returns the required scopes that are missing from a scope set.
    */
-  static missing(scopes: OAuth2ScopeSet, requiredScopes: OAuth2ScopeSet) {
+  static missing(
+    scopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+    requiredScopes: ReadonlyArray<typeof ScopeValueSchema.Type>,
+  ) {
     return Effect.gen(function* () {
       yield* OAuth2Scope.Helper.validateAll(scopes);
       yield* OAuth2Scope.Helper.validateAll(requiredScopes);
@@ -107,6 +119,5 @@ export class OAuth2Scope {
 }
 
 export namespace OAuth2Scope {
-  export type Value = OAuth2ScopeValue;
-  export type Set = OAuth2ScopeSet;
+  export type Set = ReadonlyArray<typeof ScopeValueSchema.Type>;
 }

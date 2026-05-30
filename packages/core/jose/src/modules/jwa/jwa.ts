@@ -9,7 +9,6 @@ import {
   JWAKeyCompatibilityError,
 } from "./jwa.errors";
 import { Helper } from "./jwa.helper";
-import type { JWAAlgorithm, JWAKey } from "./jwa.types";
 
 /**
  * Signs and verifies payloads using JSON Web Algorithms.
@@ -28,8 +27,8 @@ export class JWA {
     key,
     payload,
   }: {
-    alg: JWAAlgorithm;
-    key: JWAKey;
+    alg: JWA.Algorithm;
+    key: JWA.Key;
     payload: Uint8Array;
   }) {
     return Effect.gen(function* () {
@@ -59,8 +58,8 @@ export class JWA {
     payload,
     signature,
   }: {
-    alg: JWAAlgorithm;
-    key: JWAKey;
+    alg: JWA.Algorithm;
+    key: JWA.Key;
     payload: Uint8Array;
     signature: Uint8Array;
   }) {
@@ -83,6 +82,10 @@ export class JWA {
 }
 
 export declare namespace JWA {
-  export type Algorithm = JWAAlgorithm;
-  export type Key = JWAKey;
+  export type Algorithm =
+    | typeof AlgorithmReference.HS256
+    | typeof AlgorithmReference.RS256
+    | typeof AlgorithmReference.ES256;
+
+  export type Key = CryptoKey | Uint8Array;
 }

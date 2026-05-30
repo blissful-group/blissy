@@ -3,8 +3,8 @@ import { Effect, Schema } from "effect";
 import type { Filters } from "../../utils/filters";
 import { JWKSKeyMatchError, JWKSParseError } from "./jwks.errors";
 import { Helper } from "./jwks.helper";
+import type { JWKSKeySchema } from "./jwks.schema";
 import { JWKSSetSchema } from "./jwks.schema";
-import type { JWKSKey, JWKSSet, JWKSValue } from "./jwks.types";
 
 /**
  * Parses JWKS documents and selects matching keys.
@@ -31,7 +31,10 @@ export class JWKS {
   /**
    * Finds a single key in a JWKS document matching the given criteria.
    */
-  static findKey({ set, ...args }: Filters.Input & { set: JWKSSet }) {
+  static findKey({
+    set,
+    ...args
+  }: Filters.Input & { set: typeof JWKSSetSchema.Type }) {
     return Effect.gen(function* () {
       const parsedSet = yield* JWKS.parse(set);
 
@@ -41,7 +44,6 @@ export class JWKS {
 }
 
 export declare namespace JWKS {
-  export type Value = JWKSValue;
-  export type Key = JWKSKey;
-  export type Set = JWKSSet;
+  export type Key = typeof JWKSKeySchema.Type;
+  export type Set = typeof JWKSSetSchema.Type;
 }

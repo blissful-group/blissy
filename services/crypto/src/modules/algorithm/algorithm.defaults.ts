@@ -1,7 +1,7 @@
+import type { AlgorithmReference } from "./algorithm";
 import { A256GCM, ES256, HS256, RS256, SHA256 } from "./algorithm.constants";
-import type { AlgorithmService } from "./algorithm.types";
 
-export const defaultValue = (): AlgorithmService => ({
+export const defaultValue = (): AlgorithmReference.Service => ({
   digest: {
     [SHA256]: "SHA-256",
   },

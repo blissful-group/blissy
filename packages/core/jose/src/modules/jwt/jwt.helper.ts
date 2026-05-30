@@ -1,17 +1,17 @@
 import { Effect } from "effect";
 
-import type { JWAKey } from "../jwa/jwa.types";
+import type { JWA } from "../jwa/jwa";
 import { JWK } from "../jwk/jwk";
-import type { JWKSet } from "../jwk/jwk.types";
+import type { JWKSetSchema } from "../jwk/jwk.schema";
+import type { JWT } from "./jwt";
 import { JWTClaimValidationError } from "./jwt.errors";
-import type { JWTClaims, JWTHeader } from "./jwt.types";
 
 export class Helper {
   static validateIssuer({
     claims,
     issuer,
   }: {
-    claims: JWTClaims;
+    claims: JWT.Claims;
     issuer?: string;
   }) {
     if (issuer === undefined) return Effect.void;
@@ -28,7 +28,7 @@ export class Helper {
     claims,
     subject,
   }: {
-    claims: JWTClaims;
+    claims: JWT.Claims;
     subject?: string;
   }) {
     if (subject === undefined) return Effect.void;
@@ -45,7 +45,7 @@ export class Helper {
     audience,
     claims,
   }: {
-    claims: JWTClaims;
+    claims: JWT.Claims;
     audience?: string;
   }) {
     if (audience === undefined) return Effect.void;
@@ -66,7 +66,7 @@ export class Helper {
     clockTolerance,
     now,
   }: {
-    claims: JWTClaims;
+    claims: JWT.Claims;
     now: number;
     clockTolerance: number;
   }) {
@@ -85,7 +85,7 @@ export class Helper {
     clockTolerance,
     now,
   }: {
-    claims: JWTClaims;
+    claims: JWT.Claims;
     now: number;
     clockTolerance: number;
   }) {
@@ -104,7 +104,7 @@ export class Helper {
     clockTolerance,
     now,
   }: {
-    claims: JWTClaims;
+    claims: JWT.Claims;
     now: number;
     clockTolerance: number;
   }) {
@@ -123,9 +123,9 @@ export class Helper {
     jwks,
     key,
   }: {
-    header: JWTHeader;
-    key?: JWAKey;
-    jwks?: JWKSet;
+    header: JWT.Header;
+    key?: JWA.Key;
+    jwks?: typeof JWKSetSchema.Type;
   }) {
     return Effect.gen(function* () {
       if (key !== undefined) return key;

@@ -5,12 +5,12 @@ import {
 import { Effect } from "effect";
 
 import { Base64 } from "../../utils/base64";
+import type { JWE } from "./jwe";
 import {
   JWEAlgorithmNotSupportedError,
   JWEDecryptionError,
   JWEEncryptionNotSupportedError,
 } from "./jwe.errors";
-import type { JWEHeader, JWEHeaderValue, JWERecipient } from "./jwe.types";
 
 export class Helper {
   private static encoder = new TextEncoder();
@@ -24,8 +24,8 @@ export class Helper {
   }: {
     key: Uint8Array;
     payload: Uint8Array;
-    protectedHeader: JWEHeader;
-    header?: Record<string, JWEHeaderValue>;
+    protectedHeader: JWE.Header;
+    header?: Record<string, JWE.HeaderValue>;
   }) {
     return Effect.gen(function* () {
       yield* Helper.validateProtectedHeader(protectedHeader);
@@ -79,7 +79,7 @@ export class Helper {
       const protectedHeaderBytes = yield* Base64.decode(protectedSegment);
       const protectedHeader = JSON.parse(
         Helper.decoder.decode(protectedHeaderBytes),
-      ) as JWEHeader;
+      ) as JWE.Header;
 
       yield* Helper.validateProtectedHeader(protectedHeader);
 
@@ -167,7 +167,7 @@ export class Helper {
     recipients,
   }: {
     kid: string;
-    recipients: JWERecipient[];
+    recipients: JWE.Recipient[];
   }) {
     const recipient = recipients.find(
       (candidate) => candidate.header?.kid === kid,

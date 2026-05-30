@@ -362,7 +362,6 @@ const key = await Effect.runPromise(
 
 Available attached types and errors:
 
-- `JWK.Value`
 - `JWK.Key`
 - `JWK.Set`
 - `JWK.SetParseError`
@@ -401,7 +400,6 @@ const key = await Effect.runPromise(
 
 Available attached types and errors:
 
-- `JWKS.Value`
 - `JWKS.Key`
 - `JWKS.Set`
 - `JWKS.ParseError`

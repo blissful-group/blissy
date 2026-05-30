@@ -2,7 +2,6 @@ import { Context } from "effect";
 
 import { A256GCM, ES256, HS256, RS256, SHA256 } from "./algorithm.constants";
 import { defaultValue } from "./algorithm.defaults";
-import type { AlgorithmService } from "./algorithm.types";
 
 export class AlgorithmReference extends Context.Reference<AlgorithmReference>()(
   "@blissy-auth/crypto/AlgorithmReference",
@@ -16,5 +15,32 @@ export class AlgorithmReference extends Context.Reference<AlgorithmReference>()(
 }
 
 export namespace AlgorithmReference {
-  export type Service = AlgorithmService;
+  export type Service = {
+    digest: {
+      [SHA256]: AlgorithmIdentifier;
+    };
+    jwa: {
+      [HS256]: {
+        importKey: HmacImportParams;
+        sign: AlgorithmIdentifier;
+      };
+      [RS256]: {
+        importKey: RsaHashedImportParams;
+        sign: AlgorithmIdentifier;
+      };
+      [ES256]: {
+        importKey: EcKeyImportParams;
+        sign: EcdsaParams;
+      };
+    };
+    jwe: {
+      [A256GCM]: {
+        importKey: AesKeyAlgorithm;
+        params: (input: {
+          iv: Uint8Array<ArrayBuffer>;
+          additionalData?: Uint8Array<ArrayBuffer>;
+        }) => AesGcmParams;
+      };
+    };
+  };
 }
